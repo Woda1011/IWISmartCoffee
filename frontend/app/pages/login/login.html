@@ -1,0 +1,22 @@
+<ion-navbar *navbar>
+  <ion-title>Login</ion-title>
+</ion-navbar>
+
+<ion-content>
+  <form #loginCreds="ngForm" (ngSubmit)="login(loginCreds.value)">
+    <ion-item>
+      <ion-label floating>Username</ion-label>
+      <ion-input type="text" ngControl="username"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label floating>Password</ion-label>
+      <ion-input type="password" ngControl="password"></ion-input>
+    </ion-item>
+
+    <div padding>
+      <button block type="submit">Login</button>
+    </div>
+
+  </form>
+</ion-content>

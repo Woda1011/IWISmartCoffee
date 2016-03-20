@@ -1,8 +1,11 @@
 module.exports = {
-  proxies: null,
+  proxies: [{
+    "path": "/api",
+    "proxyUrl": "http://localhost:8080/api"
+  }],
 
   paths: {
-    html : {
+    html: {
       src: ['app/**/*.html'],
       dest: "www/build"
     },
@@ -47,7 +50,7 @@ module.exports = {
   // The format is 'before' or 'after' + commandName (uppercased)
   // ex: beforeServe, afterRun, beforePrepare, etc.
   hooks: {
-    beforeServe: function(argv) {
+    beforeServe: function (argv) {
       //console.log('beforeServe');
     }
   }
