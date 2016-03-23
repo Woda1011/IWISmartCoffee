@@ -1,2 +1,4 @@
 .idea/
 frontend/app/**/*.js
+backend/target
+*.iml
