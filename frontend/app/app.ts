@@ -1,29 +1,31 @@
 import {App, IonicApp, Platform, MenuController} from 'ionic-angular';
+import {CookieService} from 'angular2-cookie/core';
 import {HelloIonicPage} from './pages/hello-ionic/hello-ionic';
 import {ListPage} from './pages/list/list';
 import {LoginPage} from "./pages/login/login";
+import {AuthService} from "./base/auth";
 
 
 @App({
   templateUrl: 'build/app.html',
-  config: {} // http://ionicframework.com/docs/v2/api/config/Config/
+  config: {}, // http://ionicframework.com/docs/v2/api/config/Config/
+  providers: [AuthService, CookieService]
 })
 class MyApp {
-  rootPage: any = LoginPage;
-  pages: Array<{title: string, component: any}>;
+  rootPage: any;
+  private isLoggedIn: () => boolean;
+  pages: Array<{title: string, authorizedRoles?: string[], component: any}>;
 
-  constructor(
-    private app: IonicApp,
-    private platform: Platform,
-    private menu: MenuController
-  ) {
+  constructor(private app: IonicApp, private platform: Platform, private menu: MenuController,
+              private AuthService: AuthService) {
+    this.rootPage = this.AuthService.getUser() ? HelloIonicPage : LoginPage;
+    this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.initializeApp();
 
     // set our app's pages
     this.pages = [
-      { title: 'Hello Ionic', component: HelloIonicPage },
-      { title: 'My First List', component: ListPage },
-      { title: 'Login', component: LoginPage}
+      {title: 'Hello Ionic', authorizedRoles: ["ROLE_USER"], component: HelloIonicPage},
+      {title: 'My First', authorizedRoles: ["ROLE_ADMIN"], component: ListPage}
     ];
   }
 
@@ -52,5 +54,13 @@ class MyApp {
     // navigate to the new page if it is not the current page
     let nav = this.app.getComponent('nav');
     nav.setRoot(page.component);
+  }
+
+  isVisible(roles: string[]) {
+    return this.AuthService.isAuthorized(roles);
+  }
+
+  logout() {
+    this.AuthService.logout().then(() => this.openPage({component: LoginPage}));
   }
 }

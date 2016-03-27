@@ -6,9 +6,12 @@
 
   <ion-content>
     <ion-list>
-      <button ion-item *ngFor="#p of pages" (click)="openPage(p)">
-        {{p.title}}
-      </button>
+      <div *ngFor="#p of pages">
+        <button ion-item *ngIf="isVisible(p.authorizedRoles)" (click)="openPage(p)">
+          {{p.title}}
+        </button>
+      </div>
+      <button ion-item *ngIf="isLoggedIn()" (click)="logout()">Ausloggen</button>
     </ion-list>
   </ion-content>
 
