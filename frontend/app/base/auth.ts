@@ -13,7 +13,7 @@ export class AuthService {
     const base64encodedCredentials = btoa(credentials.username + ":" + credentials.password);
     authHeaders.append('Authorization', 'Basic ' + base64encodedCredentials);
 
-    return this.http.get("/api//students/_me", {
+    return this.http.get("/api/students/_me", {
         headers: authHeaders
       })
       .toPromise()
