@@ -1,34 +1,46 @@
 #include "DHT.h"
+#include <ArduinoJson.h>
 
 #define DHTPIN 2
 #define DHTTYPE DHT11
-
 DHT dht(DHTPIN, DHTTYPE);
+
+float temperatureToSend;
+float humidityToSend;
+
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("DHT11 test!");
-
+  Serial.println("Telemetry Broker is Running");
   dht.begin();
 }
 
 void loop() {
+  // Read data every 2 seconds
   delay(2000);
 
-  float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
-  
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
+  //init json tree
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["temperature"] = temperatureToSend;
+  root["humidity"] = humidityToSend;
+
+  //read sensor data
+  float humidityCurrent = dht.readHumidity();
+  float temperatureCurrent = dht.readTemperature();
+
+  if (isnan(humidityCurrent) || isnan(temperatureCurrent)) {
+    Serial.println("Failed to Read from!");
     return;
   }
 
-  Serial.print("Humidity: ");
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Temperature: ");
-  Serial.print(t);
-  Serial.println(" *C ");
+  //check if the data has changed and prepare json to send
+  if (temperatureCurrent != temperatureToSend || humidityCurrent != humidityToSend) {
+    temperatureToSend = temperatureCurrent;
+    humidityToSend = humidityCurrent;
+    root["temperature"] = temperatureToSend;
+    root["humidity"] = humidityToSend;
+    root.printTo(Serial);
+    Serial.println("");
+  }
 }
