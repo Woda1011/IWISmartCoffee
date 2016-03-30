@@ -41,5 +41,6 @@ void loop() {
     root["temperature"] = temperatureToSend;
     root["humidity"] = humidityToSend;
     root.printTo(Serial);
+    Serial.println("");
   }
 }
