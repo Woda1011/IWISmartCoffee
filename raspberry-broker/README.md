@@ -1,5 +1,9 @@
 # raspberry-broker
 Der PI empfängt die Sensordaten des Arduino und sendet diese an das Backend!
 
-* npm install
-* npm start
+* Im Root ``npm install``
+* Zum Starten ``npm start``
+
+
+## Useful Linux Commands
+* PI runterfahren ``sudo shutdown -h 0``
