@@ -1,5 +1,8 @@
 package de.hska.smartcoffee.studentmanagement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +12,7 @@ public class StudentResource {
     private String firstName;
     private String lastName;
     private Long campusCardId;
+    private String password;
     private List<String> roles;
 
     public StudentResource() {
@@ -61,5 +65,15 @@ public class StudentResource {
 
     public void setCampusCardId(Long campusCardId) {
         this.campusCardId = campusCardId;
+    }
+
+    @JsonIgnore
+    public String getPassword() {
+        return password;
+    }
+
+    @JsonProperty
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

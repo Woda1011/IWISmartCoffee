@@ -5,11 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +18,12 @@ public class StudentController {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private StudentRoleAssignmentRepository studentRoleAssignmentRepository;
 
     @RequestMapping(method = RequestMethod.GET, value = "/_me")
     public StudentResource login(Authentication authentication) {
@@ -53,5 +58,42 @@ public class StudentController {
         }
 
         return new StudentResource(student);
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public StudentResource add(@RequestBody StudentResource studentResource) {
+        Student foundStudent = studentRepository.findByHskaId(studentResource.getHskaId());
+
+        if (foundStudent != null) {
+            throw new StudentAlreadyExistsException("Student already exists");
+        }
+
+        Student student = new Student();
+        Date creationDate = new Date();
+
+        student.setHskaId(studentResource.getHskaId());
+        student.setFirstName(studentResource.getFirstName());
+        student.setLastName(studentResource.getLastName());
+        student.setPassword(new BCryptPasswordEncoder().encode(studentResource.getPassword()));
+        student.setCreatedAt(creationDate);
+        student.setUpdatedAt(creationDate);
+
+        Student savedStudent = studentRepository.save(student);
+
+        List<StudentRoleAssignment> studentRoleAssignments = studentResource.getRoles().stream().map(roleName -> {
+            Role role = roleRepository.findByName(roleName);
+            if (role != null) {
+                StudentRoleAssignment studentRoleAssignment = new StudentRoleAssignment();
+                studentRoleAssignment.setRole(role);
+                studentRoleAssignment.setStudent(savedStudent);
+                return studentRoleAssignmentRepository.save(studentRoleAssignment);
+            }
+            return null;
+        }).collect(Collectors.toList());
+
+        savedStudent.setStudentRoleAssignments(studentRoleAssignments);
+
+        return new StudentResource(savedStudent);
     }
 }
