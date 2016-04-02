@@ -1,13 +1,27 @@
 package de.hska.smartcoffee.studentmanagement;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StudentResource {
 
     private String hskaId;
     private String firstName;
     private String lastName;
+    private Long campusCardId;
     private List<String> roles;
+
+    public StudentResource() {
+    }
+
+    public StudentResource(Student student) {
+        this.hskaId = student.getHskaId();
+        this.firstName = student.getFirstName();
+        this.lastName = student.getLastName();
+        this.campusCardId = student.getCampusCardId();
+        this.roles = student.getStudentRoleAssignments().stream().map(studentRoleAssignment -> studentRoleAssignment
+                .getRole().getName()).collect(Collectors.toList());
+    }
 
     public String getHskaId() {
         return hskaId;
@@ -39,5 +53,13 @@ public class StudentResource {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public Long getCampusCardId() {
+        return campusCardId;
+    }
+
+    public void setCampusCardId(Long campusCardId) {
+        this.campusCardId = campusCardId;
     }
 }
