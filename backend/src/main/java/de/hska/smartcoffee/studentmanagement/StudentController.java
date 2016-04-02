@@ -110,6 +110,20 @@ public class StudentController {
         return new StudentResource(savedStudent);
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{hskaId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(@PathVariable String hskaId) {
+        Student student = this.studentRepository.findByHskaId(hskaId);
+        if (student == null) {
+            throw new StudentNotFoundException("Could not find student with hskaId " + hskaId);
+        }
+
+        student.setDeleted(true);
+        student.setUpdatedAt(new Date());
+
+        studentRepository.save(student);
+    }
+
     private StudentRoleAssignment getStudentRoleAssignment(Student student, String roleName) {
         Role role = roleRepository.findByName(roleName);
         if (role != null) {
