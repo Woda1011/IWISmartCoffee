@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,5 +42,16 @@ public class StudentController {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StudentResource> all(Pageable pageable) {
         return this.studentRepository.findAll(pageable).map(StudentResource::new);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/{hskaId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public StudentResource findOne(@PathVariable String hskaId) {
+        Student student = this.studentRepository.findByHskaId(hskaId);
+        if (student == null) {
+            throw new StudentNotFoundException("Could not find student with hskaId " + hskaId);
+        }
+
+        return new StudentResource(student);
     }
 }
