@@ -81,19 +81,43 @@ public class StudentController {
 
         Student savedStudent = studentRepository.save(student);
 
-        List<StudentRoleAssignment> studentRoleAssignments = studentResource.getRoles().stream().map(roleName -> {
-            Role role = roleRepository.findByName(roleName);
-            if (role != null) {
-                StudentRoleAssignment studentRoleAssignment = new StudentRoleAssignment();
-                studentRoleAssignment.setRole(role);
-                studentRoleAssignment.setStudent(savedStudent);
-                return studentRoleAssignmentRepository.save(studentRoleAssignment);
-            }
-            return null;
-        }).collect(Collectors.toList());
-
-        savedStudent.setStudentRoleAssignments(studentRoleAssignments);
+        savedStudent.setStudentRoleAssignments(studentResource.getRoles().stream().map(roleName ->
+                getStudentRoleAssignment(savedStudent, roleName)).collect(Collectors.toList()));
 
         return new StudentResource(savedStudent);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/{hskaId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public StudentResource update(@PathVariable String hskaId, @RequestBody StudentResource studentResource) {
+        Student student = this.studentRepository.findByHskaId(hskaId);
+        if (student == null) {
+            throw new StudentNotFoundException("Could not find student with hskaId " + hskaId);
+        }
+
+        student.setCampusCardId(studentResource.getCampusCardId());
+        student.setLastName(studentResource.getLastName());
+        student.setUpdatedAt(new Date());
+
+        Student savedStudent = studentRepository.save(student);
+        savedStudent.setStudentRoleAssignments(studentResource.getRoles().stream().map(roleName -> {
+            // delete assignments first because we can remove roles from student
+            studentRoleAssignmentRepository.findByStudent(savedStudent).forEach(assignment ->
+                    studentRoleAssignmentRepository.delete(assignment));
+            return getStudentRoleAssignment(savedStudent, roleName);
+        }).collect(Collectors.toList()));
+
+        return new StudentResource(savedStudent);
+    }
+
+    private StudentRoleAssignment getStudentRoleAssignment(Student student, String roleName) {
+        Role role = roleRepository.findByName(roleName);
+        if (role != null) {
+            StudentRoleAssignment studentRoleAssignment = new StudentRoleAssignment();
+            studentRoleAssignment.setRole(role);
+            studentRoleAssignment.setStudent(student);
+            return studentRoleAssignmentRepository.save(studentRoleAssignment);
+        }
+        return null;
     }
 }
