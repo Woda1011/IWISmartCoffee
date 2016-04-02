@@ -46,7 +46,7 @@ public class StudentController {
     @RequestMapping(method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StudentResource> all(Pageable pageable) {
-        return this.studentRepository.findAll(pageable).map(StudentResource::new);
+        return this.studentRepository.findByIsDeletedFalse(pageable).map(StudentResource::new);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{hskaId}")
