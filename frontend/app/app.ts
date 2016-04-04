@@ -2,6 +2,7 @@ import {App, IonicApp, Platform, MenuController} from 'ionic-angular';
 import {CookieService} from 'angular2-cookie/core';
 import {HelloIonicPage} from './pages/hello-ionic/hello-ionic';
 import {ListPage} from './pages/list/list';
+import {ProfileSettingsPage} from "./pages/profile-settings/profile-settings";
 import {LoginPage} from "./pages/login/login";
 import {AuthService} from "./base/auth";
 
@@ -25,7 +26,8 @@ class MyApp {
     // set our app's pages
     this.pages = [
       {title: 'Hello Ionic', authorizedRoles: ["ROLE_USER"], component: HelloIonicPage},
-      {title: 'My First', authorizedRoles: ["ROLE_ADMIN"], component: ListPage}
+      {title: 'My First', authorizedRoles: ["ROLE_ADMIN"], component: ListPage},
+      {title: 'Profil Einstellungen', authorizedRoles: ["ROLE_ADMIN"], component: ProfileSettingsPage}
     ];
   }
 
