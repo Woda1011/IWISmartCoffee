@@ -9,23 +9,25 @@
 
   <ion-list>
     <ion-list-header>
-      Profileinstellungen <b>grpe1010</b>
+      Profileinstellungen <b>{{user.hskaId}}</b>
     </ion-list-header>
-
+    <ion-item *ngIf="user.roles.length > 1" *ngFor="#a_role of user.roles">
+      <ion-icon name="leaf" item-left></ion-icon> {{a_role}}
+    </ion-item>
 
     <ion-item>
       <ion-label fixed>Benutzername</ion-label>
-      <ion-input type="text" value="Sir Petöör"></ion-input>
+      <ion-input type="text" value="{{user.firstName}}s_Nicname"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label fixed>Vorname</ion-label>
-      <ion-input type="text" value="Peter"></ion-input>
+      <ion-input type="text" value="{{user.firstName}}"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label fixed>Nachname</ion-label>
-      <ion-input type="text" value="Grittner"></ion-input>
+      <ion-input type="text" value="{{user.lastName}}"></ion-input>
     </ion-item>
 
     <button dark>Änderungen speichern</button>
