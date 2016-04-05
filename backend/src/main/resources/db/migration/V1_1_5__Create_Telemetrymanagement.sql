@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS telemetry
   created_at  TIMESTAMP NOT NULL
 );
 
+ALTER TABLE telemetry
+  ADD CONSTRAINT uq_created_at UNIQUE (created_at);
+
 INSERT INTO telemetry (id, temperature, humidity, created_at)
 VALUES (1, 68.5, 50.1, to_timestamp('2016-04-05 10:31:10', 'yyyy-mm-dd hh24:mi:ss'));
 
