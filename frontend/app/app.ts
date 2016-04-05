@@ -1,6 +1,6 @@
 import {App, IonicApp, Platform, MenuController} from 'ionic-angular';
 import {CookieService} from 'angular2-cookie/core';
-import {HelloIonicPage} from './pages/hello-ionic/hello-ionic';
+import {Dashboard} from './pages/dashboard/dashboard';
 import {ListPage} from './pages/list/list';
 import {ProfileSettingsPage} from "./pages/profile-settings/profile-settings";
 import {LoginPage} from "./pages/login/login";
@@ -19,14 +19,14 @@ class MyApp {
 
   constructor(private app: IonicApp, private platform: Platform, private menu: MenuController,
               private AuthService: AuthService) {
-    this.rootPage = this.AuthService.getUser() ? HelloIonicPage : LoginPage;
+    this.rootPage = this.AuthService.getUser() ? Dashboard : LoginPage;
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.initializeApp();
 
-    // set our app's pages
+    // set our app's pages 
     this.pages = [
-      {title: 'Hello Ionic', authorizedRoles: ["ROLE_USER"], component: HelloIonicPage},
-      {title: 'My First', authorizedRoles: ["ROLE_ADMIN"], component: ListPage},
+      {title: 'Dashboard', authorizedRoles: ["ROLE_USER"], component: Dashboard},
+      {title: '*Testseite', authorizedRoles: ["ROLE_ADMIN"], component: ListPage},
       {title: 'Profil Einstellungen', authorizedRoles: ["ROLE_ADMIN"], component: ProfileSettingsPage}
     ];
   }

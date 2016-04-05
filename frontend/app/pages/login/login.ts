@@ -1,6 +1,6 @@
 import {Page, MenuController, IonicApp} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
-import {HelloIonicPage} from "../hello-ionic/hello-ionic";
+import {Dashboard} from "../dashboard/dashboard";
 
 @Page({
   templateUrl: 'build/pages/login/login.html',
@@ -16,7 +16,7 @@ export class LoginPage {
     this.AuthService.login(credentials).then((data) => {
       console.log(data);
       let nav = this.app.getComponent('nav');
-      nav.setRoot(HelloIonicPage);
+      nav.setRoot(Dashboard);
     });
   }
 }
