@@ -9,3 +9,10 @@ export interface User {
   hskaId: string;
   roles: string[];
 }
+
+export interface Telemetry{
+  id:number;
+  temperature: number;
+  humidity: number;
+  createdAt: number;
+}

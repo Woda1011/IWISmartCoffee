@@ -18,6 +18,7 @@ export class AuthService {
   login(credentials: Credentials) {
     let authHeaders = new Headers();
     const base64encodedCredentials = btoa(credentials.username + ":" + credentials.password);
+    this.store.set('base64encodedCredentials', base64encodedCredentials); //ToDo: Nicht so cool, sollte wieder raus, bei besseren Lösung (Interceptor)
     authHeaders.append('Authorization', 'Basic ' + base64encodedCredentials);
 
     return this.http.get("/api/students/_me", {
