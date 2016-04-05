@@ -1,6 +1,14 @@
 var express = require('express');
 var app = express();
 var serialport = require("serialport");
+var http = require('http');
+
+var options = {
+    host: '127.0.0.1',
+    port: '8080',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+};
 
 
 function openSerialPort(portName) {
@@ -12,16 +20,27 @@ function openSerialPort(portName) {
     serial.on("open", function () {
         console.log('serial port is now open');
         serial.on('data', function (data) {
-            //TODO parse JSON Object and prepare it for rest call
-            //TODO errorhandling vom arduino if it prints something else than json on the serialport
-            console.log('data received: ' + data);
+            try {
+                var jsonData = JSON.parse(data);
+                var telemetryData = {
+                        temperature: jsonData.temperature,
+                        humidity: jsonData.humidity,
+                        createdAt: new Date().getTime()
+
+                };
+                postTelemetryData(JSON.stringify(telemetryData));
+                console.log('data received: ' + JSON.stringify(telemetryData));
+            } catch (err) {
+                console.error('Error parsing Data from Arduino: ' + data);
+                console.error(err);
+            }
         });
     });
 }
 
 serialport.list(function (err, ports) {
     if (err) {
-        //TODO handle error
+        throw err;
     }
 
     ports.forEach(function (port) {
@@ -38,3 +57,18 @@ app.get('/', function (req, res) {
 app.listen(3000, function () {
     console.log('Example app listening on port 3000!');
 });
+
+function postTelemetryData(sensorData){
+    //TODO errorhandling for connection timeout
+    options.path = '/api/telemetry';
+
+    var request = http.request(options, function(response) {
+        console.log('STATUS: ' + response.statusCode);
+        response.on('data', function (data) {
+            console.log('BODY: ' + data);
+        });
+    });
+
+    request.write(sensorData);
+    request.end();
+}
