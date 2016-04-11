@@ -2,3 +2,4 @@
 frontend/app/**/*.js
 backend/target
 *.iml
+backend/src/main/resources/static/
