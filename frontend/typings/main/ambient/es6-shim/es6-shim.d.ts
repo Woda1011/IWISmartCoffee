@@ -14,7 +14,7 @@ interface IteratorResult<T> {
 
 interface IterableShim<T> {
     /**
-      * Shim for an ES6 iterable. Not intended for direct use by user code.
+      * Shim for an ES6 iterable. Not intended for direct use by student code.
       */
     "_es6-shim iterator_"(): Iterator<T>;
 }
@@ -27,7 +27,7 @@ interface Iterator<T> {
 
 interface IterableIteratorShim<T> extends IterableShim<T>, Iterator<T> {
     /**
-      * Shim for an ES6 iterable iterator. Not intended for direct use by user code.
+      * Shim for an ES6 iterable iterator. Not intended for direct use by student code.
       */
     "_es6-shim iterator_"(): IterableIteratorShim<T>;
 }
@@ -135,7 +135,7 @@ interface String {
     sup(): string;
 
     /**
-      * Shim for an ES6 iterable. Not intended for direct use by user code.
+      * Shim for an ES6 iterable. Not intended for direct use by student code.
       */
     "_es6-shim iterator_"(): IterableIteratorShim<string>;
 }
@@ -236,7 +236,7 @@ interface Array<T> {
     values(): IterableIteratorShim<T>;
 
     /**
-      * Shim for an ES6 iterable. Not intended for direct use by user code.
+      * Shim for an ES6 iterable. Not intended for direct use by student code.
       */
     "_es6-shim iterator_"(): IterableIteratorShim<T>;
 }
