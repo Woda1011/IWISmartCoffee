@@ -52,22 +52,23 @@ serialport.list(function (err, ports) {
     });
 });
 
-app.get('/', function (req, res) {
-    res.send('Hello World! from my Computer!');
-});
-
 app.listen(3000, function () {
     console.log('Example app listening on port 3000!');
 });
 
 function postTelemetryData(sensorData){
-    //TODO errorhandling for connection timeout
+
     options.path = '/api/telemetry';
 
     var request = http.request(options, function(response) {
         console.log('STATUS: ' + response.statusCode);
         response.on('data', function (data) {
             console.log('BODY: ' + data);
+        });
+
+        response.on('error', function (error) {
+            //TODO errorhandling for connection timeout
+            console.error(error)
         });
     });
 
