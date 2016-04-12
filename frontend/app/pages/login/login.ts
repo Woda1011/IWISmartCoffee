@@ -8,12 +8,13 @@ import {Dashboard} from "../dashboard/dashboard";
 })
 export class LoginPage {
 
-  constructor(private app: IonicApp, private menu: MenuController, private AuthService: AuthService) {
+  constructor(private app:IonicApp, private menu: MenuController, private AuthService: AuthService) {
     this.menu.swipeEnable(false);
   }
 
   login(credentials) {
-    this.AuthService.login(credentials).then(() => {
+    this.AuthService.login(credentials).then((data) => {
+      console.log(data);
       let nav = this.app.getComponent('nav');
       nav.setRoot(Dashboard);
     });

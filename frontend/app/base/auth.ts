@@ -2,7 +2,7 @@ import {Injectable} from 'angular2/core';
 import {Http, Headers} from 'angular2/http';
 import 'rxjs/Rx';
 import {Storage, LocalStorage} from "ionic-angular";
-import {Credentials, Student} from "../_typings";
+import {Credentials, User} from "../_typings";
 import {CookieService} from 'angular2-cookie/core';
 
 @Injectable()
@@ -12,6 +12,7 @@ export class AuthService {
 
   constructor(private http: Http, private CookieService: CookieService) {
     this.store = new Storage(LocalStorage);
+    console.log(this.CookieService.get('XSRF-TOKEN'));
   }
 
   login(credentials: Credentials) {
@@ -25,27 +26,28 @@ export class AuthService {
       })
       .toPromise()
       .then((data) => {
-        let student: Student = data.json();
-        this.setStudent({
-          firstName: student.firstName,
-          lastName: student.lastName,
-          hskaId: student.hskaId,
-          roles: student.roles
+        let user: User = data.json();
+        this.setUser({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          hskaId: user.hskaId,
+          roles: user.roles
         });
-        return student;
+        return user;
       });
   }
 
-  setStudent(student: Student) {
-    this.store.setJson('student', student);
+  setUser(user: User) {
+    this.store.setJson('user', user);
   }
 
-  getStudent(): Student {
-    return JSON.parse(this.store.get('student')._result);
+  getUser(): User {
+    let user = this.store.get('user')._result;
+    return JSON.parse(user);
   }
 
   isAuthenticated(): boolean {
-    return !!this.getStudent();
+    return !!this.getUser();
   }
 
   isAuthorized(authorizedRoles: string[]): boolean {
@@ -59,7 +61,7 @@ export class AuthService {
   }
 
   getUserRoles() {
-    let user: Student = this.getStudent();
+    let user: User = this.getUser();
     return user ? user.roles : [];
   }
 
@@ -70,7 +72,7 @@ export class AuthService {
   }
 
   clearSession(): void {
-    this.store.remove('student');
+    this.store.remove('user');
     this.CookieService.remove('XSRF-TOKEN');
   }
 }

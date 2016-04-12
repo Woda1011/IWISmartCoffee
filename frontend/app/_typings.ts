@@ -3,7 +3,7 @@ export interface Credentials {
   password: string;
 }
 
-export interface Student {
+export interface User {
   firstName: string;
   lastName: string;
   hskaId: string;
