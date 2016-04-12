@@ -1,11 +1,12 @@
 var express = require('express');
 var app = express();
 var serialport = require("serialport");
-var http = require('http');
+var http = require('https');
 
 var options = {
-    host: '127.0.0.1',
-    port: '8080',
+    //host: '127.0.0.1',
+    //port: '8080',
+    host: 'www.smartcoffee.event-news.org',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
 };
@@ -20,6 +21,7 @@ function openSerialPort(portName) {
     serial.on("open", function () {
         console.log('serial port is now open');
         serial.on('data', function (data) {
+
             try {
                 var jsonData = JSON.parse(data);
                 var telemetryData = {
