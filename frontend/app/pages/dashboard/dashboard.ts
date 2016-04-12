@@ -1,7 +1,8 @@
 import {Page} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
-import {User, Telemetry} from "../../_typings";
+import {User, TelemertyClass} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.service";
+import {Observable} from 'rxjs/Rx';
 
 
 @Page({
@@ -12,25 +13,42 @@ export class Dashboard {
 
   showCoffeCouponInsertField:boolean;
   user:User;
-  telemetry:Telemetry;
+  telemetry:TelemertyClass;
 
   constructor(private authService:AuthService, private httpService:HttpService){
     this.user = authService.getUser();
     this.showCoffeCouponInsertField=false;
 
-    this.telemetry = this.httpService.getTelemetry();
 
-    this.httpService.getTelemetry().then((data) => {
-        console.log(data);
-        this.telemetry = data;
-        console.log(this.telemetry);
-      });
+    // Hier wird startwert zugewesen
+    // ToDo: eleganter als das hier lösen
+    this.telemetry = new TelemertyClass(0,0,0,0,0);
 
-    //this.telemetry = this.httpService.getTelemetry();
-    //console.log(this.telemetry);
-    //Object { id: 10, temperature: 56.4, humidity: 35.7, createdAt: 1459847771000 }
+
+    this.getTelemetryData();
+
+    this.observerTest();
   }
 
+  /*
+   * ToDo: Observer soll hier "this.httpService.getTelemetry()" ausführen
+   */
+   observerTest() {
+      Observable.interval(5000)
+        .map((x) => x+1)
+        .subscribe((x) => {
+          console.log("Neue Telemetriedaten: "+ x);
+        });
+    }
+
+  getTelemetryData(){
+    this.httpService.getTelemetry().then((data) => {
+      this.telemetry = data;
+      let d = new Date();
+      this.telemetry.lastLoadedDateTime = d.getTime();
+      console.log(this.telemetry);
+    });
+  }
 
   makAnAltert(){
     alert("Ehhh Markus");
@@ -39,10 +57,5 @@ export class Dashboard {
 
   setCouponInsertField(){
     this.showCoffeCouponInsertField=(this.showCoffeCouponInsertField==true)?false:true;
-    //ToDo: Folgendes steht hier nur zu testzwecken, da hier button ausgenutzt werden kann
-    //console.log(this.httpService.getTelemetry());
-
   }
-
-
 }
