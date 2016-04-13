@@ -12,7 +12,6 @@ export class AuthService {
 
   constructor(private http: Http, private CookieService: CookieService) {
     this.store = new Storage(LocalStorage);
-    console.log(this.CookieService.get('XSRF-TOKEN'));
   }
 
   login(credentials: Credentials) {
