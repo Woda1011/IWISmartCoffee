@@ -46,14 +46,18 @@ serialport.list(function (err, ports) {
     }
 
     ports.forEach(function (port) {
-        if (port.manufacturer.indexOf("Arduino") >= 0) {
-            openSerialPort(port.comName);
+        if (!!port.manufacturer) {
+            console.log('checking port:' + port.manufacturer);
+            console.log('port:' + port.comName);
+            if (port.manufacturer.indexOf("Arduino") >= 0) {
+                openSerialPort(port.comName);
+            }
         }
     });
 });
 
 app.listen(3000, function () {
-    console.log('Example app listening on port 3000!');
+    console.log('Raspberry-Broker listening on port 3000!');
 });
 
 function postTelemetryData(sensorData){
