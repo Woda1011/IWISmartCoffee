@@ -35,7 +35,6 @@ export class Dashboard {
     });
   }
 
-
   makAnAltert() {
     alert("Ehhh Markus");
     console.log("Ehhh Markus ...........");
@@ -45,8 +44,5 @@ export class Dashboard {
     this.showCoffeCouponInsertField = (this.showCoffeCouponInsertField == true) ? false : true;
     //ToDo: Folgendes steht hier nur zu testzwecken, da hier button ausgenutzt werden kann
     //console.log(this.httpService.getTelemetry());
-
   }
-
-
 }
