@@ -26,7 +26,7 @@ class MyApp {
     // set our app's pages
     this.pages = [
       {title: 'Dashboard', authorizedRoles: ["ROLE_USER"], component: Dashboard},
-      {title: 'Admin:Coffee-Coins', authorizedRoles: ["ROLE_ADMIN"], component: CoffeeCoin},
+      {title: 'Coffee-Coins', authorizedRoles: ["ROLE_ADMIN"], component: CoffeeCoin},
       {title: 'Profil Einstellungen', authorizedRoles: ["ROLE_USER"], component: ProfileSettingsPage}
     ];
   }
