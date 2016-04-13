@@ -10,9 +10,9 @@ export interface User {
   roles: string[];
 }
 
-export interface Telemetry{
-  id:number;
-  temperature: number;
-  humidity: number;
-  createdAt: number;
+export interface Telemetry {
+  id?: number;
+  temperature?: number;
+  humidity?: number;
+  createdAt?: any;
 }
