@@ -6,4 +6,4 @@ Der PI empfängt die Sensordaten des Arduino und sendet diese an das Backend!
 
 
 ## Useful Linux Commands
-* PI runterfahren ``sudo shutdown -h 0``
+* PI ordentlich runterfahren ``sudo shutdown -h 0``
