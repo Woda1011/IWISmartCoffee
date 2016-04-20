@@ -16,3 +16,8 @@ export interface Telemetry {
   humidity?: number;
   createdAt?: any;
 }
+
+export interface CoffeeLog {
+  quota?: number;
+  averageConsumption?: number;
+}

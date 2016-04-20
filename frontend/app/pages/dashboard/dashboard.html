@@ -42,25 +42,29 @@
     <ion-item>
       <ion-icon name="battery-full" item-left></ion-icon>
       <ion-label>Aktueller Kontostand</ion-label>
-      <ion-label item-right>5 Tassen</ion-label>
+      <ion-label item-right>{{coffeeLog.quota}} Tassen</ion-label>
     </ion-item>
     <ion-item>
       <ion-icon name="water" item-left></ion-icon>
       <ion-label>AvG Kaffeeverbrauch</ion-label>
-      <ion-label item-right>0,7 Tassen</ion-label>
+      <ion-label item-right>{{coffeeLog.averageConsumption ? coffeeLog.averageConsumption + 'Tassen' :
+        'Kein Wert vorhanden'}}</ion-label>
 
     </ion-item>
 
     <p>
       <button block dark (click)="setCouponInsertField()">Kaffemarken eintragen</button>
     </p>
-    <form [ngFormModel]="coffeeCoinForm" (ngSubmit)="addCoffeeCoin(coffeeCoinForm.value)" *ngIf="showCoffeCouponInsertField">
+    <form [ngFormModel]="coffeeCoinForm" (ngSubmit)="addCoffeeCoin(coffeeCoinForm.value)"
+          *ngIf="showCoffeCouponInsertField">
       <ion-item>
         <ion-label stacked>Kaffemarken-Code</ion-label>
         <ion-input type="text" [ngFormControl]="coinKey"></ion-input>
       </ion-item>
 
-      <p><button block dark type="submit" [disabled]="!coffeeCoinForm.valid">Abschicken</button></p>
+      <p>
+        <button block dark type="submit" [disabled]="!coffeeCoinForm.valid">Abschicken</button>
+      </p>
     </form>
   </ion-list>
 </ion-content>

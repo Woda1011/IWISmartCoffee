@@ -1,6 +1,6 @@
 import {Page, Alert, IonicApp} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
-import {User, Telemetry} from "../../_typings";
+import {User, Telemetry, CoffeeLog} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
 import {Observable} from "rxjs/Observable";
 import {ControlGroup, AbstractControl, FormBuilder, Validators} from "angular2/common";
@@ -16,6 +16,7 @@ export class Dashboard {
   showCoffeCouponInsertField: boolean;
   user: User;
   telemetry: Telemetry = {};
+  coffeeLog: CoffeeLog = {};
 
   coffeeCoinForm: ControlGroup;
   coinKey: AbstractControl;
@@ -29,6 +30,10 @@ export class Dashboard {
 
     this.getTelemetryData();
     this.pollTelemetryData().subscribe(telemetry => this.telemetry = telemetry);
+
+    if (this.isLoggedIn()) {
+      this.getCoffeeLog();
+    }
   }
 
   /** Required for initial load */
@@ -43,28 +48,37 @@ export class Dashboard {
     });
   }
 
+  private getCoffeeLog() {
+    this.httpService.getCoffeeLog(this.user.hskaId).subscribe(
+      (coffeeLog) => this.coffeeLog = coffeeLog
+    );
+  }
+
   addCoffeeCoin(value) {
     this.httpService.addStudentCoffeeCoinMapping(value.coinKey)
       .subscribe(
         () => {
-          this.initCoffeeCoinForm();
           let alert = Alert.create({
             title: 'Erfolg',
             subTitle: 'Die Kaffeemarke wurde deinem Konto gutgeschrieben.',
             buttons: ['OK']
           });
-          let nav = this.app.getComponent('nav');
 
+          let nav = this.app.getComponent('nav');
           nav.present(alert);
+          
+          this.initCoffeeCoinForm();
+          this.getCoffeeLog();
+          this.showCoffeCouponInsertField = false;
         },
         (err) => console.log(err)
       );
   }
 
-  private initCoffeeCoinForm(){
-      this.coffeeCoinForm = this.createCoffeeCoinForm();
-      this.coinKey = this.coffeeCoinForm.controls['coinKey'];
-      }
+  private initCoffeeCoinForm() {
+    this.coffeeCoinForm = this.createCoffeeCoinForm();
+    this.coinKey = this.coffeeCoinForm.controls['coinKey'];
+  }
 
   private createCoffeeCoinForm() {
     return this.FormBuilder.group({
