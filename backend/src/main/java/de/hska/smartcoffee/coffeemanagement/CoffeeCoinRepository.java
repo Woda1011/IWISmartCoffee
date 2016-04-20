@@ -9,4 +9,6 @@ import java.util.List;
 public interface CoffeeCoinRepository extends JpaRepository<CoffeeCoin, Long> {
 
     List<CoffeeCoin> findByIsUsedFalse();
+
+    CoffeeCoin findByCoinKeyAndIsUsedFalse(String coinKey);
 }
