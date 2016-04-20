@@ -66,7 +66,7 @@ export class Dashboard {
 
           let nav = this.app.getComponent('nav');
           nav.present(alert);
-          
+
           this.initCoffeeCoinForm();
           this.getCoffeeLog();
           this.showCoffeCouponInsertField = false;
