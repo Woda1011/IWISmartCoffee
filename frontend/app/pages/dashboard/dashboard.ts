@@ -82,7 +82,7 @@ export class Dashboard {
 
   private createCoffeeCoinForm() {
     return this.FormBuilder.group({
-      'coinKey': ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(19)])]
+      'coinKey': ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(8)])]
     });
   }
 
