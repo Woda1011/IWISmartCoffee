@@ -1,37 +1,25 @@
-import {Injectable} from 'angular2/core';
-import {Http, Headers} from 'angular2/http';
-import 'rxjs/Rx';
-import {Storage, LocalStorage} from "ionic-angular";
+import {Injectable} from "angular2/core";
+import "rxjs/Rx";
 import {Telemetry} from "../../_typings";
 import {Observable} from "rxjs/Observable";
 import {AuthHttp} from "../../base/authHttp";
+import {Http} from "angular2/http";
 
 
 @Injectable()
 export class HttpService {
 
-  private store: Storage;
-  private base64encodedCredentials: string;
-
-  constructor(private authHttp: AuthHttp) {
-    this.store = new Storage(LocalStorage);
-    this.base64encodedCredentials = this.store.get('base64encodedCredentials')._result;
+  constructor(private http: Http, private authHttp: AuthHttp) {
   }
 
   getTelemetry() {
-    return this.authHttp.get("/api/telemetry")
+    return this.http.get("/api/telemetry")
       .map(res => <Telemetry> res.json())
       .map(telemetry => {
         telemetry.createdAt = new Date(telemetry.createdAt);
         return telemetry;
       })
       .catch(error => Observable.throw(error.json()));
-  }
-
-  private getAuthHeader(): Headers {
-    let authHeaders = new Headers();
-    authHeaders.append('Authorization', 'Basic ' + this.base64encodedCredentials);
-    return authHeaders;
   }
 
   /*

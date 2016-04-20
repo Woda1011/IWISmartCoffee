@@ -17,15 +17,15 @@ export class AuthService {
   login(credentials: Credentials) {
     let authHeaders = new Headers();
     const base64encodedCredentials = btoa(credentials.username + ":" + credentials.password);
-    this.store.set('base64encodedCredentials', base64encodedCredentials); //ToDo: Nicht so cool, sollte wieder raus, bei besseren Lösung (Interceptor)
+    this.store.set('token', base64encodedCredentials); //ToDo: Nicht so cool, sollte wieder raus, bei besseren Lösung (Interceptor)
     authHeaders.append('Authorization', 'Basic ' + base64encodedCredentials);
 
     return this.http.get("/api/students/_me", {
         headers: authHeaders
       })
       .toPromise()
-      .then((data) => {
-        let user: User = data.json();
+      .then((res) => {
+        let user: User = res.json();
         this.setUser({
           firstName: user.firstName,
           lastName: user.lastName,
@@ -50,6 +50,9 @@ export class AuthService {
   }
 
   isAuthorized(authorizedRoles: string[]): boolean {
+    if (!authorizedRoles) {
+      return true;
+    }
     var isAuthorized = false;
     let intersection = new Set([...authorizedRoles].filter(x => new Set(this.getUserRoles()).has(x)));
     if (intersection.size > 0) {
@@ -72,6 +75,7 @@ export class AuthService {
 
   clearSession(): void {
     this.store.remove('user');
+    this.store.remove('token');
     this.CookieService.remove('XSRF-TOKEN');
   }
 }

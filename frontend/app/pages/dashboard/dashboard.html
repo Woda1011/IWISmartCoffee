@@ -33,11 +33,10 @@
 
   </ion-list>
 
-  <p>
-    Hier findest du Informationen zu deinem Kaffeestand/-verbrauch und kannst neues Kaffee-Kontingent einpflegen.
-  </p>
-
-  <ion-list>
+  <ion-list *ngIf="isLoggedIn()">
+    <p>
+      Hier findest du Informationen zu deinem Kaffeestand/-verbrauch und kannst neues Kaffee-Kontingent einpflegen.
+    </p>
     <ion-item-divider light>Servus {{user.firstName}}, dein SmartcoffeDashboard:</ion-item-divider>
 
     <ion-item>
@@ -51,20 +50,13 @@
       <ion-label item-right>0,7 Tassen</ion-label>
 
     </ion-item>
+
+    <p>
+      <button block dark (click)="setCouponInsertField()">Kaffemarken eintragen</button>
+    </p>
+    <ion-item *ngIf="showCoffeCouponInsertField">
+      <ion-label stacked>Kaffemarken-Code</ion-label>
+      <ion-input type="text"></ion-input>
+    </ion-item>
   </ion-list>
-
-
-  <p>
-    <button block dark (click)="setCouponInsertField()">Kaffemarken eintragen</button>
-  </p>
-  <ion-item *ngIf="showCoffeCouponInsertField">
-    <ion-label stacked>Kaffemarken-Code</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
-
-
-
-  <p>
-    <button block light primary menuToggle>Menü ein/ausblenden</button>
-  </p>
 </ion-content>

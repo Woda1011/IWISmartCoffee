@@ -11,12 +11,14 @@ import {Observable} from "rxjs/Observable";
 })
 export class Dashboard {
 
+  isLoggedIn: () => boolean;
   showCoffeCouponInsertField: boolean;
   user: User;
   telemetry: Telemetry = {};
 
-  constructor(private authService: AuthService, private httpService: HttpService) {
-    this.user = authService.getUser();
+  constructor(private AuthService: AuthService, private httpService: HttpService) {
+    this.isLoggedIn = () => this.AuthService.isAuthenticated();
+    this.user = AuthService.getUser();
     this.showCoffeCouponInsertField = false;
 
     this.getTelemetryData();

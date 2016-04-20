@@ -19,18 +19,18 @@ import {AuthHttp, AuthHttp} from "./base/authHttp";
 })
 class MyApp {
   rootPage: any;
-  private isLoggedIn: () => boolean;
+  isLoggedIn: () => boolean;
   pages: Array<{title: string, authorizedRoles?: string[], component: any}>;
 
   constructor(private app: IonicApp, private platform: Platform, private menu: MenuController,
               private AuthService: AuthService) {
-    this.rootPage = this.AuthService.getUser() ? Dashboard : LoginPage;
+    this.rootPage = Dashboard;
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.initializeApp();
 
     // set our app's pages
     this.pages = [
-      {title: 'Dashboard', authorizedRoles: ["ROLE_USER"], component: Dashboard},
+      {title: 'Dashboard', component: Dashboard},
       {title: 'Coffee-Coins', authorizedRoles: ["ROLE_ADMIN"], component: CoffeeCoin},
       {title: 'Profil Einstellungen', authorizedRoles: ["ROLE_USER"], component: ProfileSettingsPage}
     ];
@@ -60,14 +60,18 @@ class MyApp {
     this.menu.close();
     // navigate to the new page if it is not the current page
     let nav = this.app.getComponent('nav');
-    nav.setRoot(page.component);
+    nav.setRoot(page);
   }
 
   isVisible(roles: string[]) {
     return this.AuthService.isAuthorized(roles);
   }
 
+  login() {
+    this.openPage(LoginPage);
+  }
+
   logout() {
-    this.AuthService.logout().then(() => this.openPage({component: LoginPage}));
+    this.AuthService.logout().then(() => this.openPage(LoginPage));
   }
 }
