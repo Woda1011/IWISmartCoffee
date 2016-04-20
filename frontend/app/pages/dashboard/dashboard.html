@@ -37,7 +37,7 @@
     <p>
       Hier findest du Informationen zu deinem Kaffeestand/-verbrauch und kannst neues Kaffee-Kontingent einpflegen.
     </p>
-    <ion-item-divider light>Servus {{user.firstName}}, dein SmartcoffeDashboard:</ion-item-divider>
+    <ion-item-divider light>Servus {{user.firstName}}, dein Smartcoffee Dashboard:</ion-item-divider>
 
     <ion-item>
       <ion-icon name="battery-full" item-left></ion-icon>
@@ -54,9 +54,13 @@
     <p>
       <button block dark (click)="setCouponInsertField()">Kaffemarken eintragen</button>
     </p>
-    <ion-item *ngIf="showCoffeCouponInsertField">
-      <ion-label stacked>Kaffemarken-Code</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
+    <form [ngFormModel]="coffeeCoinForm" (ngSubmit)="addCoffeeCoin(coffeeCoinForm.value)" *ngIf="showCoffeCouponInsertField">
+      <ion-item>
+        <ion-label stacked>Kaffemarken-Code</ion-label>
+        <ion-input type="text" [ngFormControl]="coinKey"></ion-input>
+      </ion-item>
+
+      <p><button block dark type="submit" [disabled]="!coffeeCoinForm.valid">Abschicken</button></p>
+    </form>
   </ion-list>
 </ion-content>

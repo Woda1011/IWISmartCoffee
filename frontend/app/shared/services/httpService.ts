@@ -22,6 +22,10 @@ export class HttpService {
       .catch(error => Observable.throw(error.json()));
   }
 
+  addStudentCoffeeCoinMapping(coinKey: string) {
+    return this.authHttp.post("/api/coffee-coins/" + coinKey, null);
+  }
+
   /*
    ToDo: Hier weitere Zugriffe auf restservice realsiieren /Zusammenfassen
    */

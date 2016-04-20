@@ -1,8 +1,9 @@
-import {Page} from 'ionic-angular';
+import {Page, Alert, IonicApp} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
 import {User, Telemetry} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
 import {Observable} from "rxjs/Observable";
+import {ControlGroup, AbstractControl, FormBuilder, Validators} from "angular2/common";
 
 
 @Page({
@@ -16,10 +17,15 @@ export class Dashboard {
   user: User;
   telemetry: Telemetry = {};
 
-  constructor(private AuthService: AuthService, private httpService: HttpService) {
+  coffeeCoinForm: ControlGroup;
+  coinKey: AbstractControl;
+
+  constructor(private app: IonicApp, private AuthService: AuthService, private httpService: HttpService,
+              private FormBuilder: FormBuilder) {
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.user = AuthService.getUser();
     this.showCoffeCouponInsertField = false;
+    this.initCoffeeCoinForm();
 
     this.getTelemetryData();
     this.pollTelemetryData().subscribe(telemetry => this.telemetry = telemetry);
@@ -37,14 +43,36 @@ export class Dashboard {
     });
   }
 
-  makAnAltert() {
-    alert("Ehhh Markus");
-    console.log("Ehhh Markus ...........");
+  addCoffeeCoin(value) {
+    this.httpService.addStudentCoffeeCoinMapping(value.coinKey)
+      .subscribe(
+        () => {
+          this.initCoffeeCoinForm();
+          let alert = Alert.create({
+            title: 'Erfolg',
+            subTitle: 'Die Kaffeemarke wurde deinem Konto gutgeschrieben.',
+            buttons: ['OK']
+          });
+          let nav = this.app.getComponent('nav');
+
+          nav.present(alert);
+        },
+        (err) => console.log(err)
+      );
+  }
+
+  private initCoffeeCoinForm(){
+      this.coffeeCoinForm = this.createCoffeeCoinForm();
+      this.coinKey = this.coffeeCoinForm.controls['coinKey'];
+      }
+
+  private createCoffeeCoinForm() {
+    return this.FormBuilder.group({
+      'coinKey': ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(19)])]
+    });
   }
 
   setCouponInsertField() {
     this.showCoffeCouponInsertField = (this.showCoffeCouponInsertField == true) ? false : true;
-    //ToDo: Folgendes steht hier nur zu testzwecken, da hier button ausgenutzt werden kann
-    //console.log(this.httpService.getTelemetry());
   }
 }
