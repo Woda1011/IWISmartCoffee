@@ -68,12 +68,8 @@ public class CoffeeCoinService {
     private String generateCoinKey() {
         String result = "";
 
-        for (int i = 0; i < 19; i++) {
-            if (result.length() == 4 || result.length() == 9 || result.length() == 14) {
-                result += "-";
-            } else {
-                result += alphabet.charAt(random.nextInt(alphabet.length()));
-            }
+        for (int i = 0; i < 8; i++) {
+            result += alphabet.charAt(random.nextInt(alphabet.length()));
         }
 
         return result;
