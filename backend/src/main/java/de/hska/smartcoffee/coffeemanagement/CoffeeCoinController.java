@@ -4,8 +4,7 @@ import de.hska.smartcoffee.studentmanagement.Student;
 import de.hska.smartcoffee.studentmanagement.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +43,7 @@ public class CoffeeCoinController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/{coinKey}")
     @PreAuthorize("isAuthenticated()")
-    public void addUserCoffeeCoinMapping(@PathVariable String coinKey, @AuthenticationPrincipal User user) {
+    public void addUserCoffeeCoinMapping(@PathVariable String coinKey, Authentication authentication) {
         CoffeeCoin coffeeCoin = coffeeCoinRepository.findByCoinKeyAndIsUsedFalse(coinKey);
 
         if (coffeeCoin == null) {
@@ -52,7 +51,7 @@ public class CoffeeCoinController {
                     "exists or is already used!");
         }
 
-        Student student = studentRepository.findByHskaId(user.getUsername());
+        Student student = studentRepository.findByHskaId(authentication.getName());
 
         saveStudentCoffeeCoin(coffeeCoin, student);
         setCoffeeCoinIsUsed(coffeeCoin);
