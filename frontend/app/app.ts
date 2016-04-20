@@ -1,16 +1,21 @@
-import {App, IonicApp, Platform, MenuController} from 'ionic-angular';
-import {CookieService} from 'angular2-cookie/core';
-import {Dashboard} from './pages/dashboard/dashboard';
-import {CoffeeCoin} from './pages/coffee-coin/coffee-coin';
+import {App, IonicApp, Platform, MenuController} from "ionic-angular";
+import {CookieService} from "angular2-cookie/core";
+import {Dashboard} from "./pages/dashboard/dashboard";
+import {CoffeeCoin} from "./pages/coffee-coin/coffee-coin";
 import {ProfileSettingsPage} from "./pages/profile-settings/profile-settings";
 import {LoginPage} from "./pages/login/login";
 import {AuthService} from "./base/auth";
+import {AuthHttp, AuthHttp} from "./base/authHttp";
 
 
 @App({
   templateUrl: 'build/app.html',
   config: {}, // http://ionicframework.com/docs/v2/api/config/Config/
-  providers: [AuthService, CookieService]
+  providers: [
+    AuthService,
+    CookieService,
+    AuthHttp
+  ]
 })
 class MyApp {
   rootPage: any;

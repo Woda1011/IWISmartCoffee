@@ -4,6 +4,7 @@ import 'rxjs/Rx';
 import {Storage, LocalStorage} from "ionic-angular";
 import {Telemetry} from "../../_typings";
 import {Observable} from "rxjs/Observable";
+import {AuthHttp} from "../../base/authHttp";
 
 
 @Injectable()
@@ -12,15 +13,13 @@ export class HttpService {
   private store: Storage;
   private base64encodedCredentials: string;
 
-  constructor(private http: Http) {
+  constructor(private authHttp: AuthHttp) {
     this.store = new Storage(LocalStorage);
     this.base64encodedCredentials = this.store.get('base64encodedCredentials')._result;
   }
 
   getTelemetry() {
-    return this.http.get("/api/telemetry", {
-        headers: this.getAuthHeader()
-      })
+    return this.authHttp.get("/api/telemetry")
       .map(res => <Telemetry> res.json())
       .map(telemetry => {
         telemetry.createdAt = new Date(telemetry.createdAt);
