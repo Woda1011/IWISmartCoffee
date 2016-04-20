@@ -5,9 +5,30 @@
   <ion-title>Kaffeemarken</ion-title>
 </ion-navbar>
 
-<ion-content>
-  <ion-list>
-    <button ion-item (click)="generateCoffeeCoins()"> Kaffeemarken generieren
-    </button>
-  </ion-list>
+<ion-content padding>
+  <form [ngFormModel]="coffeeCoinForm" (ngSubmit)="generateCoffeeCoins(coffeeCoinForm.value)">
+    <ion-row>
+      <ion-col width-50>
+        <ion-item>
+          <ion-label>Wert der Marken</ion-label>
+          <ion-select [ngFormControl]="coinValue">
+            <ion-option value="10">10</ion-option>
+            <ion-option value="25">25</ion-option>
+            <ion-option value="50">50</ion-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col width-50>
+        <ion-item>
+          <ion-label>Anzahl</ion-label>
+          <ion-input type="number" [ngFormControl]="amount"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <button block light type="submit">Kaffeemarken generieren</button>
+      </ion-col>
+    </ion-row>
+  </form>
 </ion-content>
