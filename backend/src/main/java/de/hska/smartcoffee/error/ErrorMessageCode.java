@@ -7,7 +7,8 @@ public enum ErrorMessageCode {
     INTERNAL_SERVER_ERROR("error.internal_server_error"),
     STUDENT_NOT_FOUND("error.student_not_found"),
     STUDENT_ALREADY_EXISTS("error.student_already_exists"),
-    COFFEE_COIN_DOES_NOT_EXISTS_OR_IS_USED("error.coffee_coin.does_not_exists_or_is_used");
+    COFFEE_COIN_DOES_NOT_EXISTS_OR_IS_USED("error.coffee_coin.does_not_exists_or_is_used"),
+    NO_QUOTA_AVAILABLE("error.coffee.no_quota_available");
 
     private String value;
 
