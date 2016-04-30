@@ -8,7 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,7 +47,7 @@ public class StudentController {
     @RequestMapping(method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StudentResource> all(Pageable pageable) {
-        return this.studentRepository.findByIsDeletedFalse(pageable).map(StudentResource::new);
+        return this.studentRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable).map(StudentResource::new);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{hskaId}")
@@ -79,6 +81,12 @@ public class StudentController {
         student.setUpdatedAt(creationDate);
 
         Student savedStudent = studentRepository.save(student);
+
+        if (studentResource.getRoles() == null) {
+            List<String> defaultRoles = new ArrayList<>();
+            defaultRoles.add("ROLE_USER");
+            studentResource.setRoles(defaultRoles);
+        }
 
         savedStudent.setStudentRoleAssignments(studentResource.getRoles().stream().map(roleName ->
                 getStudentRoleAssignment(savedStudent, roleName)).collect(Collectors.toList()));

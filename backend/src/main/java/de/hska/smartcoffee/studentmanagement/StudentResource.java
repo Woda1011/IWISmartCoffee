@@ -11,7 +11,7 @@ public class StudentResource {
     private String hskaId;
     private String firstName;
     private String lastName;
-    private Long campusCardId;
+    private String campusCardId;
     private String password;
     private List<String> roles;
 
@@ -59,11 +59,11 @@ public class StudentResource {
         this.roles = roles;
     }
 
-    public Long getCampusCardId() {
+    public String getCampusCardId() {
         return campusCardId;
     }
 
-    public void setCampusCardId(Long campusCardId) {
+    public void setCampusCardId(String campusCardId) {
         this.campusCardId = campusCardId;
     }
 

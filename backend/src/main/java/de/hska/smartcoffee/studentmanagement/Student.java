@@ -22,7 +22,7 @@ public class Student extends SmartCoffeeEntity {
     @Size(max = 8)
     private String hskaId;
 
-    private Long campusCardId;
+    private String campusCardId;
 
     @NotNull
     private String password;
@@ -54,11 +54,11 @@ public class Student extends SmartCoffeeEntity {
         this.hskaId = hskaId;
     }
 
-    public Long getCampusCardId() {
+    public String getCampusCardId() {
         return campusCardId;
     }
 
-    public void setCampusCardId(Long campusCardId) {
+    public void setCampusCardId(String campusCardId) {
         this.campusCardId = campusCardId;
     }
 
