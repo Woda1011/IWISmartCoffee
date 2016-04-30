@@ -22,5 +22,12 @@
     "webpack": "1.12.14"
   },
   "name": "frontend",
-  "description": "frontend: An Ionic project"
+  "description": "frontend: An Ionic project",
+  "cordovaPlugins": [],
+  "cordovaPlatforms": [
+    {
+      "platform": "android",
+      "locator": "browser"
+    }
+  ]
 }

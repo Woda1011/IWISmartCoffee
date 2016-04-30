@@ -45,8 +45,14 @@ export class AuthHttp {
 
   private checkIfXsrfTokenIsValid(res) {
     let token = res.headers.get('x-xsrf-token');
+    // On the server the headers are uppercase so we try to get the uppercase header
+    if (!token) {
+      token = res.headers.get('X-XSRF-TOKEN');
+    }
     if (!token || token !== this.CookieService.get('XSRF-TOKEN')) {
-      this.store.remove('user');
+      console.log("Token is not valid anymore!");
+      this.store.remove('student');
+      this.store.remove('token');
       this.CookieService.remove('XSRF-TOKEN');
     }
   }
