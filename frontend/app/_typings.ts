@@ -3,10 +3,11 @@ export interface Credentials {
   password: string;
 }
 
-export interface User {
+export interface Student {
   firstName: string;
   lastName: string;
   hskaId: string;
+  campusCardId?: string;
   roles: string[];
 }
 

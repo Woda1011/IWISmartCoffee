@@ -1,6 +1,6 @@
 import {Injectable} from "angular2/core";
 import "rxjs/Rx";
-import {Telemetry, CoffeeLog} from "../../_typings";
+import {Telemetry, CoffeeLog, Student} from "../../_typings";
 import {Observable} from "rxjs/Observable";
 import {AuthHttp} from "../../base/authHttp";
 import {Http} from "angular2/http";
@@ -26,6 +26,14 @@ export class HttpService {
   }
 
   getCoffeeLog(hskaId: string) {
-    return this.authHttp.get("/api/students/" + hskaId + "/coffee-log").map(res => <CoffeeLog> res.json());
+    return this.authHttp.get("/api/students/" + hskaId + "/coffee-log");
+  }
+
+  getStudents() {
+    return this.authHttp.get("/api/students").map(res => res.content);
+  }
+
+  addStudent(student: Student) {
+    return this.authHttp.post("/api/students", student);
   }
 }

@@ -27,17 +27,20 @@ export class AuthHttp {
     return this.http.get(url, {headers: headers})
       .do(res => {
         this.checkIfXsrfTokenIsValid(res);
-      });
+      })
+      .map(res => res.json());
   }
 
   post(url, data) {
     let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
     this.createAuthorizationHeaders(headers);
     this.createXSRFHeaders(headers);
-    return this.http.post(url, data, {headers: headers})
+    return this.http.post(url, JSON.stringify(data), {headers: headers})
       .do(res => {
         this.checkIfXsrfTokenIsValid(res);
-      });
+      })
+      .map(res => res.json());
   }
 
   private checkIfXsrfTokenIsValid(res) {

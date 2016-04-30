@@ -6,7 +6,8 @@ import {ProfileSettingsPage} from "./pages/profile-settings/profile-settings";
 import {LoginPage} from "./pages/login/login";
 import {AuthService} from "./base/auth";
 import {AuthHttp} from "./base/authHttp";
-
+import {Students} from "./pages/students/students";
+import {WebSocketService} from "./base/websocket-service";
 
 @App({
   templateUrl: 'build/app.html',
@@ -14,7 +15,8 @@ import {AuthHttp} from "./base/authHttp";
   providers: [
     AuthService,
     CookieService,
-    AuthHttp
+    AuthHttp,
+    WebSocketService
   ]
 })
 class MyApp {
@@ -32,12 +34,14 @@ class MyApp {
     this.pages = [
       {title: 'Dashboard', component: Dashboard},
       {title: 'Coffee-Coins', authorizedRoles: ["ROLE_ADMIN"], component: CoffeeCoin},
+      {title: 'Studenten', authorizedRoles: ["ROLE_ADMIN"], component: Students},
       {title: 'Profil Einstellungen', authorizedRoles: ["ROLE_USER"], component: ProfileSettingsPage}
     ];
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {});
+    this.platform.ready().then(() => {
+    });
   }
 
   openPage(page) {

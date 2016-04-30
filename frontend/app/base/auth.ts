@@ -2,7 +2,7 @@ import {Injectable} from 'angular2/core';
 import {Http, Headers} from 'angular2/http';
 import 'rxjs/Rx';
 import {Storage, LocalStorage} from "ionic-angular";
-import {Credentials, User} from "../_typings";
+import {Credentials, Student} from "../_typings";
 import {CookieService} from 'angular2-cookie/core';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class AuthService {
       })
       .toPromise()
       .then((res) => {
-        let user: User = res.json();
+        let user: Student = res.json();
         this.setUser({
           firstName: user.firstName,
           lastName: user.lastName,
@@ -36,11 +36,11 @@ export class AuthService {
       });
   }
 
-  setUser(user: User) {
+  setUser(user: Student) {
     this.store.setJson('user', user);
   }
 
-  getUser(): User {
+  getUser(): Student {
     let user = this.store.get('user')._result;
     return JSON.parse(user);
   }
@@ -63,7 +63,7 @@ export class AuthService {
   }
 
   getUserRoles() {
-    let user: User = this.getUser();
+    let user: Student = this.getUser();
     return user ? user.roles : [];
   }
 

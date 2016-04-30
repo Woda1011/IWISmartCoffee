@@ -1,6 +1,6 @@
 import {Page, Alert, IonicApp} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
-import {User, Telemetry, CoffeeLog} from "../../_typings";
+import {Student, Telemetry, CoffeeLog} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
 import {Observable} from "rxjs/Observable";
 import {ControlGroup, AbstractControl, FormBuilder, Validators} from "angular2/common";
@@ -14,7 +14,7 @@ export class Dashboard {
 
   isLoggedIn: () => boolean;
   showCoffeCouponInsertField: boolean;
-  user: User;
+  user: Student;
   telemetry: Telemetry = {};
   coffeeLog: CoffeeLog = {};
 

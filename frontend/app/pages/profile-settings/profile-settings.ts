@@ -1,6 +1,6 @@
 import {Page} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
-import {User} from "../../_typings";
+import {Student} from "../../_typings";
 
 @Page({
   templateUrl: 'build/pages/profile-settings/profile-settings.html',
@@ -8,7 +8,7 @@ import {User} from "../../_typings";
 })
 export class ProfileSettingsPage {
 
-  user: User;
+  user: Student;
 
   constructor(private authService: AuthService) {
     this.user = authService.getUser();
