@@ -4,13 +4,13 @@ import {User} from "../../_typings";
 
 @Page({
   templateUrl: 'build/pages/profile-settings/profile-settings.html',
-  providers:[AuthService]
+  providers: [AuthService]
 })
 export class ProfileSettingsPage {
 
-  user:User;
+  user: User;
 
-  constructor(private authService:AuthService) {
+  constructor(private authService: AuthService) {
     this.user = authService.getUser();
   }
 }
