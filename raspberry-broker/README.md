@@ -7,3 +7,12 @@ Der PI empfängt die Sensordaten des Arduino und sendet diese an das Backend!
 
 ## Useful Linux Commands
 * PI ordentlich runterfahren ``sudo shutdown -h 0``
+
+
+## PN532 Board installieren
+Für das Board werden verschiedene Bibliotheken benötigt.
+* libnfc
+* libmifare dingens
+* mifare-classic node module
+
+### Installation von libnfc
