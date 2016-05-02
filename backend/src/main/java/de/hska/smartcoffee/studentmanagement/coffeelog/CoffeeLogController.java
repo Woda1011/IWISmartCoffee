@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/students/{hskaId}/coffee-log")
+@RequestMapping("/api/students/{id}/coffee-log")
 public class CoffeeLogController {
 
     @Autowired
@@ -21,18 +21,18 @@ public class CoffeeLogController {
     private CoffeeLogService coffeeLogService;
 
     @RequestMapping(method = RequestMethod.GET)
-    @PreAuthorize("isAuthenticated() && #hskaId == principal.username")
-    public CoffeeLogResource getCoffeeLog(@PathVariable String hskaId) {
-        Student student = getStudent(hskaId);
+    @PreAuthorize("isAuthenticated()")
+    public CoffeeLogResource getCoffeeLog(@PathVariable String id) {
+        Student student = getStudent(id);
 
         // TODO Calculate averageConsumption
         return new CoffeeLogResource(coffeeLogService.getQuota(student), null);
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    @PreAuthorize("isAuthenticated() && #hskaId == principal.username")
-    public CoffeeLogResource addCoffeeLog(@PathVariable String hskaId) {
-        Student student = getStudent(hskaId);
+    @PreAuthorize("isAuthenticated()")
+    public CoffeeLogResource addCoffeeLog(@PathVariable String id) {
+        Student student = getStudent(id);
 
         Long quota = coffeeLogService.getQuota(student);
         if (quota == 0) {
@@ -45,11 +45,14 @@ public class CoffeeLogController {
         return new CoffeeLogResource(coffeeLogService.getQuota(student), null);
     }
 
-    private Student getStudent(@PathVariable String hskaId) {
-        Student student = studentRepository.findByHskaId(hskaId);
+    private Student getStudent(@PathVariable String id) {
+        Student student = studentRepository.findByHskaId(id);
 
         if (student == null) {
-            throw new StudentNotFoundException("Could not find student with hskaId " + hskaId);
+            student = studentRepository.findByCampusCardId(id);
+            if (student == null) {
+                throw new StudentNotFoundException("Could not find student with id " + id);
+            }
         }
         return student;
     }
