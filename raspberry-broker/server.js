@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var serialport = require("serialport");
 var http = require('https');
+var execFile = require('child_process').execFile;
 
 var options = {
     //host: '127.0.0.1',
@@ -11,6 +12,32 @@ var options = {
     headers: { 'Content-Type': 'application/json' }
 };
 
+
+read();
+
+function read() {
+
+  execFile('nfc-list', function(error, stdout, stderr) {
+      var searchString = '(NFCID1):';
+      if(stdout.indexOf(searchString) >= 0) {
+          //ID found, so someone placed a card on the reader --> extract ID
+          //recursice function
+          var tempString = stdout.slice(stdout.indexOf(searchString));
+
+          var uid = tempString.substring(tempString.indexOf(':')+1, tempString.indexOf('\n'));
+          console.log('Tag detected with UID: ' + uid);
+
+          //TODO Convert 4 Byte Hex Code to Decimal
+          //TODO 3. If an ID is available send request to the server, if not show message on screen, and poll again
+          read();
+      } else {
+          console.log('no Tag');
+          read();
+      }
+    //TODO parse error
+    //Child_Process von Spawn ist Zu Ende, neuen Prozess starten
+  });
+}
 
 function openSerialPort(portName) {
     var serial = new serialport.SerialPort(portName, {
