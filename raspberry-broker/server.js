@@ -156,6 +156,131 @@ app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
 });
 
+
+/*
+ *      ------ ONOFF - FUER KOMMUNIKATION MIT GPIOs ------
+ */
+var Gpio = require('onoff').Gpio,
+    button_led = new Gpio(26, 'out'),
+    intern_led = new Gpio(20, 'out'),
+    output_water = new Gpio(23, 'out'),
+    button = new Gpio(22, 'in', 'rising'); //geht noch nicht richtig
+
+/*
+ *      ------ ONOFF - FUER KOMMUNIKATION MIT 433HZ Modul ------
+ */
+var rpi433    = require('rpi-433'),
+    rfSniffer = rpi433.sniffer(17, 500), //Sniff on PIN 17 with a 500ms debounce delay
+    rfSend    = rpi433.sendCode;
+
+// Receive
+rfSniffer.on('codes', function (code) {
+    console.log('Code received: '+code);
+});
+
+// Send
+/*
+ rfSend(5393, 0, function(error, stdout) {   //Send 1234
+ if(!error) console.log(stdout); //Should display 1234
+ });
+ */
+
+button.watch(function(err, value){
+    if (err) { throw err; }
+    else{ get_coffee(); }
+});
+
+
+
+
+//Zeigt an, ob gerade ein Kaffee rausgelassen wird
+var coffee_output_in_use = false;
+
+
+
+//Funktion welche die Ausgabe des Kaffees regelt
+function get_coffee(){
+
+    //Es wird gerade Kaffee rausgelassen
+    if(coffee_output_in_use==true){
+        console.log("Bitte Warten - Kaffee wird bereits ausgegeben!");
+    }
+
+    //Kaffeemaschine ist leer
+    else if(coffeeMachine.available_coffees <= 0){
+        console.log("Kaffetopf ist leer - bitte wieder auff�llen!");
+        LCD_Zeile_1_Text = "Kaffee leer!         ";
+        LCD_Zeile_2_Text = "Mach neuen Kaffee!";
+    }
+
+    //Student ist nicht eingeloggt
+    else if(coffeeMachine.student_logged_in==false){
+        console.log("Kein Student eingeloggt! - Bitte einloggen");
+        LCD_Zeile_1_Text = "Bitte Einloggen!";
+        setTimeout(function() {
+            LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+        }, 2000);
+    }
+
+    //Student ist eingeloggt, aber kein Kaffee kontingent mehr
+    else if(logged_in_student.contingent<=0){
+        console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auff�llen, will er nicht einen schmerzvollen Erm�dungstod sterben");
+        LCD_Zeile_1_Text = "Kontingent leer!";
+        setTimeout(function() {
+            LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+        }, 2000);
+    }
+
+    //Student ist eingeloggt und hat noch Kaffeekontingent
+    else{
+        //Weitere Kaffeeausgabeversuche w�hrend der Ausgabe blockieren
+        coffee_output_in_use=true;
+        //Kaffeeausgabe starten
+        output_water.writeSync(1);
+        console.log("Kaffee marsch !!");
+        LCD_Zeile_1_Text = "Kaffee !!!!";
+        //Button LED ausmachen um zu singnalisieren, dass man sich gerade keinen Kaffee bestellen kann
+        button_led.writeSync(0);
+
+        setTimeout(function() {
+            output_water.writeSync(0);
+            console.log("Kaffee stopp !!");
+            LCD_Zeile_1_Text = "Kaffee fertig!";
+
+
+            coffeeMachine.available_coffees--;
+            logged_in_student.contingent--;
+
+
+            //Wenn der Student noch Kontingent hat soll der Button leuchten
+            if(logged_in_student.contingent<=0 || coffeeMachine.available_coffees<=0){button_led.writeSync(0);}
+
+
+            // -----------------------------------------------------------
+            // -----------------------------------------------------------
+            // ToDo:Hier Http Request der dies auch in Backend anpasst ---
+            // -----------------------------------------------------------
+            // -----------------------------------------------------------
+
+            setTimeout(function() {
+                //LCD_Zeile_1_Text_Studentname_Kaffeekontingent wieder auf  Basisinfodaten des Studenten zur�cksetzen "Name  (KaffeekontingentAnz)""
+                setLCD_Zeile_1_Text_Studentname_Kaffeekontingent();
+                LCD_Zeile_1_Text_Default = LCD_Zeile_1_Text_Studentname_Kaffeekontingent;
+                LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+
+                //Kaffeeausgabe wieder auf false setzte. Ab jetzt kann wieder Kaffee geortert weden
+                coffee_output_in_use = false;
+                console.log("Now you can get moooooore Coffee");
+
+                //Wenn noch Kaffee da ist der Student noch Kontingent hat soll der Button leuchten
+                if(logged_in_student.contingent>0 && coffeeMachine.available_coffees>0){button_led.writeSync(1);}
+
+            }, 3000);
+
+        }, 1500);
+    } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
+}
+
 read();
 
 function read() {
