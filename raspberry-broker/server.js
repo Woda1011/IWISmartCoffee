@@ -6,6 +6,22 @@ var execFile = require('child_process').execFile;
 var request = require('request');
 var lcdscreen = require('lcd');
 
+var options = {
+    host: '127.0.0.1',
+    port: '8080',
+    //host: 'www.smartcoffee.event-news.org',
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'}
+};
+
+var currentStudent = {
+    campusCardId: ''
+};
+
+app.listen(3000, function () {
+    console.log('Raspberry-Broker listening on port 3000!');
+});
+
 var lcd = new lcdscreen({
     rs: 12,
     e: 21,
@@ -14,58 +30,64 @@ var lcd = new lcdscreen({
     rows: 2
 });
 
-var Leerzeichen = "                ";
-var LCD_Zeile_1_Text_Default = "SmartCoffee";
-var LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
-var LCD_Zeile_1_Text_Studentname_Kaffeekontingent = "";
-var LCD_Zeile_2_Text = "2. Reihe";
+var emptyRow = "                ";
+var lcdFirstRowDefault = "SmartCoffee";
+var lcdFirstRow = lcdFirstRowDefault;
+var lcdStudentInfoRow = "";
+var lcdSecondRow = "2. Reihe";
+
+var coffeeMachine = {};
+coffeeMachine.student_logged_in = false;
+coffeeMachine.temperature = 57;
+coffeeMachine.available_coffees = 2;
+coffeeMachine.coffee_finish_timestamp = Date.now();
+
+var logged_in_student = {};
+logged_in_student.first_name = "";
+logged_in_student.contingent = 0;
 
 
-function setLCD_Zeile_1_Text_Studentname_Kaffeekontingent() {
-    LCD_Zeile_1_Text_Studentname_Kaffeekontingent = "Hi " + logged_in_student.first_name + Leerzeichen;
+function setLcdFirstRowStudentInfo() {
+    //TODO logged in student
+    lcdStudentInfoRow = "Hi " + logged_in_student.first_name + emptyRow;
 
-    Ausgabetext = LCD_Zeile_1_Text;
+    Ausgabetext = lcdFirstRow;
 
     if (coffeeMachine.student_logged_in == true) {
         if (logged_in_student.contingent < 10) {
-            LCD_Zeile_1_Text_Studentname_Kaffeekontingent = LCD_Zeile_1_Text_Studentname_Kaffeekontingent.substring(0, 13) +
+            lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 13) +
                 "(" + logged_in_student.contingent + ")";
         }
         else {
-            LCD_Zeile_1_Text_Studentname_Kaffeekontingent = LCD_Zeile_1_Text_Studentname_Kaffeekontingent.substring(0, 12) +
+            lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 12) +
                 "(" + logged_in_student.contingent + ")";
         }
     }
 }
 
-function setRow_1() {
-}
-
-function setRow_2() {
+function setLcdSecondRow() {
     if (coffeeMachine.available_coffees > 0) {
-        LCD_Zeile_2_Text = coffeeMachine.temperature + "Grad  " + coffeeMachine.available_coffees + "Kaffee" + "        ";
+        lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.available_coffees + "Kaffee" + "        ";
     }
     else {
-        LCD_Zeile_2_Text = "Mach mehr Kaffee! ";
+        lcdSecondRow = "Mach mehr Kaffee! ";
     }
 }
 
-
-//Clock
 lcd.on('ready', function () {
     setInterval(function () {
-        setRow_2();
+        setLcdSecondRow();
 
         lcd.setCursor(0, 0);
-        Leerzeichen = "                ";
-        Ausgabetext = LCD_Zeile_1_Text + Leerzeichen;
+        emptyRow = "                ";
+        Ausgabetext = lcdFirstRow + emptyRow;
 
 
         lcd.print(Ausgabetext.substring(0, 16));
 
         lcd.once('printed', function () {
             lcd.setCursor(0, 1); // col 0, row 1
-            lcd.print(LCD_Zeile_2_Text.substring(0, 16)); // print date
+            lcd.print(lcdSecondRow.substring(0, 16)); // print date
         });
     }, 1000);
 });
@@ -76,11 +98,11 @@ function logInStudent(name, coffeeContingent) {
     logged_in_student.first_name = name;
     logged_in_student.contingent = coffeeContingent;
 
-    setLCD_Zeile_1_Text_Studentname_Kaffeekontingent();
+    setLcdFirstRowStudentInfo();
 
     setTimeout(function () {
-        LCD_Zeile_1_Text_Default = LCD_Zeile_1_Text_Studentname_Kaffeekontingent;
-        LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+        lcdFirstRowDefault = lcdStudentInfoRow;
+        lcdFirstRow = lcdFirstRowDefault;
     }, 30);
 
     intern_led.writeSync(1);
@@ -96,14 +118,14 @@ function logOutStudent() {
     logged_in_student.first_name = "";
     logged_in_student.contingent = 0;
 
-    LCD_Zeile_1_Text = "Ausgeloggt";
+    lcdFirstRow = "Ausgeloggt";
 
     intern_led.writeSync(0);
     button_led.writeSync(0);
 
     setTimeout(function () {
-        LCD_Zeile_1_Text_Default = "SmartCoffee";
-        LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+        lcdFirstRowDefault = "SmartCoffee";
+        lcdFirstRow = lcdFirstRowDefault;
     }, 1500);
 
 }
@@ -139,23 +161,12 @@ process.on('SIGINT', function () {
     process.exit();
 });
 
-
-var options = {
-    host: '127.0.0.1',
-    port: '8080',
-    //host: 'www.smartcoffee.event-news.org',
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'}
-};
-
-var currentStudent = {
-    campusCardId: ''
-};
-
-app.listen(3000, function () {
-    console.log('Raspberry-Broker listening on port 3000!');
+app.get('/login/:username/:kontingent', function (req, res) {
+    //  res.send('An!');
+    var username = req.params.username;
+    var kontingent = req.params.kontingent;
+    logInStudent(username, kontingent ); //Math.round(Math.random()*20)
 });
-
 
 /*
  *      ------ ONOFF - FUER KOMMUNIKATION MIT GPIOs ------
@@ -164,7 +175,7 @@ var Gpio = require('onoff').Gpio,
     button_led = new Gpio(26, 'out'),
     intern_led = new Gpio(20, 'out'),
     output_water = new Gpio(23, 'out'),
-    button = new Gpio(22, 'in', 'rising'); //geht noch nicht richtig
+    button = new Gpio(22, 'in', 'rising');
 
 /*
  *      ------ ONOFF - FUER KOMMUNIKATION MIT 433HZ Modul ------
@@ -209,25 +220,25 @@ function get_coffee(){
     //Kaffeemaschine ist leer
     else if(coffeeMachine.available_coffees <= 0){
         console.log("Kaffetopf ist leer - bitte wieder auff�llen!");
-        LCD_Zeile_1_Text = "Kaffee leer!         ";
-        LCD_Zeile_2_Text = "Mach neuen Kaffee!";
+        lcdFirstRow = "Kaffee leer!         ";
+        lcdSecondRow = "Mach neuen Kaffee!";
     }
 
     //Student ist nicht eingeloggt
     else if(coffeeMachine.student_logged_in==false){
         console.log("Kein Student eingeloggt! - Bitte einloggen");
-        LCD_Zeile_1_Text = "Bitte Einloggen!";
+        lcdFirstRow = "Bitte Einloggen!";
         setTimeout(function() {
-            LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+            lcdFirstRow = lcdFirstRowDefault;
         }, 2000);
     }
 
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
     else if(logged_in_student.contingent<=0){
         console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auff�llen, will er nicht einen schmerzvollen Erm�dungstod sterben");
-        LCD_Zeile_1_Text = "Kontingent leer!";
+        lcdFirstRow = "Kontingent leer!";
         setTimeout(function() {
-            LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+            lcdFirstRow = lcdFirstRowDefault;
         }, 2000);
     }
 
@@ -238,19 +249,17 @@ function get_coffee(){
         //Kaffeeausgabe starten
         output_water.writeSync(1);
         console.log("Kaffee marsch !!");
-        LCD_Zeile_1_Text = "Kaffee !!!!";
+        lcdFirstRow = "Kaffee !!!!";
         //Button LED ausmachen um zu singnalisieren, dass man sich gerade keinen Kaffee bestellen kann
         button_led.writeSync(0);
 
         setTimeout(function() {
             output_water.writeSync(0);
             console.log("Kaffee stopp !!");
-            LCD_Zeile_1_Text = "Kaffee fertig!";
-
+            lcdFirstRow = "Kaffee fertig!";
 
             coffeeMachine.available_coffees--;
             logged_in_student.contingent--;
-
 
             //Wenn der Student noch Kontingent hat soll der Button leuchten
             if(logged_in_student.contingent<=0 || coffeeMachine.available_coffees<=0){button_led.writeSync(0);}
@@ -263,10 +272,10 @@ function get_coffee(){
             // -----------------------------------------------------------
 
             setTimeout(function() {
-                //LCD_Zeile_1_Text_Studentname_Kaffeekontingent wieder auf  Basisinfodaten des Studenten zur�cksetzen "Name  (KaffeekontingentAnz)""
-                setLCD_Zeile_1_Text_Studentname_Kaffeekontingent();
-                LCD_Zeile_1_Text_Default = LCD_Zeile_1_Text_Studentname_Kaffeekontingent;
-                LCD_Zeile_1_Text = LCD_Zeile_1_Text_Default;
+                //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zur�cksetzen "Name  (KaffeekontingentAnz)""
+                setLcdFirstRowStudentInfo();
+                lcdFirstRowDefault = lcdStudentInfoRow;
+                lcdFirstRow = lcdFirstRowDefault;
 
                 //Kaffeeausgabe wieder auf false setzte. Ab jetzt kann wieder Kaffee geortert weden
                 coffee_output_in_use = false;
@@ -280,6 +289,99 @@ function get_coffee(){
         }, 1500);
     } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
 }
+
+app.get('/', function (req, res) {
+    res.send('Hallo Liebhaber Koffeeinhaltiger Hei�getr�nke! Willkommen bei Smart Coffee!');
+});
+
+app.get('/light/on', function (req, res) {
+    res.send('An!');
+    intern_led.writeSync(1);
+});
+
+app.get('/button_led/on', function (req, res) {
+    res.send('button_led on!');
+    button_led.writeSync(1);
+});
+
+app.get('/button_led/off', function (req, res) {
+    res.send('button_led on!');
+    button_led.writeSync(0);
+});
+
+app.get('/light/short', function (req, res) {
+    res.send('Licht 1sec an!');
+    intern_led.writeSync(1);
+    console.log("Licht 1 an");
+
+    setTimeout(function () {
+        intern_led.writeSync(0);
+        console.log("Licht 1 aus");
+    }, 1000);
+
+});
+
+app.get('/light/off', function (req, res) {
+    res.send('Aus!');
+    intern_led.writeSync(0);
+});
+
+app.get('/output_water/on', function (req, res) {
+    res.send('2 An!');
+    output_water.writeSync(1);
+});
+
+app.get('/output_water/off', function (req, res) {
+    res.send('A2 us!');
+    output_water.writeSync(0);
+});
+
+app.get('/get_coffee', function (req, res) {
+    //Kaffee ausgeben
+    get_coffee();
+});
+
+app.get('/power/on', function (req, res) {
+    // Send
+    rfSend(5393, 0, function (error, stdout) {   //Send 5393
+        if (!error) {
+            console.log(stdout); //Should display 5393
+            res.send('Funksteckdose ueber 433hz eingeschaltet!');
+        }
+        else {
+            res.send('Fehler!')
+        }
+    });
+});
+
+app.get('/power/off', function (req, res) {
+    // Send
+    rfSend(5396, 0, function (error, stdout) {   //Send 5393
+        if (!error) {
+            console.log(stdout); //Should display 5393
+            res.send('Funksteckdose ueber 433hz ausgeschaltet!');
+        }
+        else {
+            res.send('Fehler!')
+        }
+    });
+});
+
+
+app.get('/login/:username/:kontingent', function (req, res) {
+    //  res.send('An!');
+    var username = req.params.username;
+    var kontingent = req.params.kontingent;
+    logInStudent(username, kontingent); //Math.round(Math.random()*20)
+});
+
+
+app.get('/update_coffee_aount_in_pot/:coffee_number', function (req, res) {
+    var coffee_number = req.params.coffee_number;
+    //  res.send('An!');
+    coffeeMachine.available_coffees = coffee_number;
+
+});
 
 read();
 
