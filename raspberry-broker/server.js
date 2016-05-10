@@ -3,15 +3,23 @@ var app = express();
 var serialport = require("serialport");
 var http = require('https');
 var execFile = require('child_process').execFile;
+var request = require('request');
 
 var options = {
-    //host: '127.0.0.1',
-    //port: '8080',
-    host: 'www.smartcoffee.event-news.org',
+    host: '127.0.0.1',
+    port: '8080',
+    //host: 'www.smartcoffee.event-news.org',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
 };
 
+var currentStudent = {
+    campusCardId: ''
+};
+
+app.listen(3000, function () {
+    console.log('Raspberry-Broker listening on port 3000!');
+});
 
 read();
 
@@ -19,52 +27,53 @@ function read() {
 
   execFile('nfc-list', function(error, stdout, stderr) {
       var searchString = '(NFCID1):';
+
       if(stdout.indexOf(searchString) >= 0) {
-          //ID found, so someone placed a card on the reader --> extract ID
-          //recursice function
           var tempString = stdout.slice(stdout.indexOf(searchString));
+          var campusCardId = tempString.substring(tempString.indexOf(':')+1, tempString.indexOf('\n'));
 
-          var uid = tempString.substring(tempString.indexOf(':')+1, tempString.indexOf('\n'));
-          console.log('Tag detected with UID: ' + uid);
+          campusCardId = campusCardId.trim();
+          campusCardId = campusCardId.replace(/ /g,'');
+          console.log('Tag detected with UID: ' + campusCardId);
 
-          //TODO Convert 4 Byte Hex Code to Decimal
-          //TODO 3. If an ID is available send request to the server, if not show message on screen, and poll again
+          if(campusCardId != currentStudent.campusCardId) {
+              currentStudent.campusCardId = campusCardId;
+
+              request.get({
+                      url:'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'},
+                  function(error, response, body){
+                      if(response.statusCode == 409) {
+                          //StatusCode 409, error: user is not mapped
+                          console.log('Student not found');
+                      }
+
+                      if(response.statusCode == 200) {
+                          //StatusCode 200 user is mapped and exists on server
+                          console.log(body);
+                      }
+
+                      console.log(error);
+
+              }).auth('woda1017', 'woda1017');
+
+
+              //TODO Send request to the server, check if ID is Mapped to a Student, If not show message on display, else verfify if student has enough coins
+              //TODO show coins on screen
+              //TODO enable coffeeoutput button
+              //TODO remove one coin if the student pushes the button.
+              //TODO disable coffeeoutput button
+              //TODO show left coffecoins on screen
+              //TODO say thank youu on screen
+              //TODO Restart poll process
+          }
           read();
       } else {
           console.log('no Tag');
+          currentStudent.campusCardId = '';
           read();
       }
     //TODO parse error
-    //Child_Process von Spawn ist Zu Ende, neuen Prozess starten
   });
-}
-
-function openSerialPort(portName) {
-    var serial = new serialport.SerialPort(portName, {
-        baudrate: 9600,
-        parser: serialport.parsers.readline('\n')
-    });
-
-    serial.on("open", function () {
-        console.log('serial port is now open');
-        serial.on('data', function (data) {
-
-            try {
-                var jsonData = JSON.parse(data);
-                var telemetryData = {
-                        temperature: jsonData.temperature,
-                        humidity: jsonData.humidity,
-                        createdAt: new Date().getTime()
-
-                };
-                postTelemetryData(JSON.stringify(telemetryData));
-                console.log('data received: ' + JSON.stringify(telemetryData));
-            } catch (err) {
-                console.error('Error parsing Data from Arduino: ' + data);
-                console.error(err);
-            }
-        });
-    });
 }
 
 serialport.list(function (err, ports) {
@@ -83,9 +92,33 @@ serialport.list(function (err, ports) {
     });
 });
 
-app.listen(3000, function () {
-    console.log('Raspberry-Broker listening on port 3000!');
-});
+function openSerialPort(portName) {
+    var serial = new serialport.SerialPort(portName, {
+        baudrate: 9600,
+        parser: serialport.parsers.readline('\n')
+    });
+
+    serial.on("open", function () {
+        console.log('serial port is now open');
+        serial.on('data', function (data) {
+
+            try {
+                var jsonData = JSON.parse(data);
+                var telemetryData = {
+                    temperature: jsonData.temperature,
+                    humidity: jsonData.humidity,
+                    createdAt: new Date().getTime()
+
+                };
+                postTelemetryData(JSON.stringify(telemetryData));
+                console.log('data received: ' + JSON.stringify(telemetryData));
+            } catch (err) {
+                console.error('Error parsing Data from Arduino: ' + data);
+                console.error(err);
+            }
+        });
+    });
+}
 
 function postTelemetryData(sensorData){
 
