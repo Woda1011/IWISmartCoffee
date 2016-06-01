@@ -1,1 +1,1 @@
-CREATE SEQUENCE hibernate_sequence START WITH 1;
+CREATE SEQUENCE hibernate_sequence START WITH 100;

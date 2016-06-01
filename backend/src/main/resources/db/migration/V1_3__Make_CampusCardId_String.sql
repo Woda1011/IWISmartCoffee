@@ -1,2 +1,0 @@
-ALTER TABLE student
-  ALTER COLUMN campus_card_id TYPE VARCHAR(255);
