@@ -26,7 +26,7 @@ public class CoffeeLogController {
         Student student = getStudent(id);
 
         // TODO Calculate averageConsumption
-        return new CoffeeLogResource(coffeeLogService.getQuota(student), null);
+        return new CoffeeLogResource(coffeeLogService.getQuota(student), null, student.getFirstName());
     }
 
     @RequestMapping(method = RequestMethod.POST)

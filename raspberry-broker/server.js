@@ -4,8 +4,14 @@ var serialport = require("serialport");
 var http = require('https');
 var execFile = require('child_process').execFile;
 var request = require('request');
-
-var Display = require('./lib/display');
+var lcdscreen = require('lcd');
+var lcd = new lcdscreen({
+    rs: 12,
+    e: 21,
+    data: [5, 6, 4, 18],
+    cols: 16,
+    rows: 2
+});
 
 var options = {
     host: '127.0.0.1',
@@ -28,6 +34,284 @@ app.get('/login/:username/:kontingent', function (req, res) {
     var username = req.params.username;
     var kontingent = req.params.kontingent;
     logInStudent(username, kontingent ); //Math.round(Math.random()*20)
+});
+
+read();
+
+function extractCampusCardId(stdout, searchString) {
+    var tempString = stdout.slice(stdout.indexOf(searchString));
+    var campusCardId = tempString.substring(tempString.indexOf(':') + 1, tempString.indexOf('\n'));
+
+    campusCardId = campusCardId.trim();
+    campusCardId = campusCardId.replace(/ /g, '');
+    console.log('Tag detected with UID: ' + campusCardId);
+    return campusCardId;
+}
+
+function read() {
+    execFile('nfc-list', function (error, stdout, stderr) {
+
+        const searchString = '(NFCID1):';
+
+        //Card detected
+        if (stdout.indexOf(searchString) >= 0) {
+            var campusCardId = extractCampusCardId(stdout, searchString);
+
+            //only send request to server when the id has changed
+            if (campusCardId != currentStudent.campusCardId) {
+                currentStudent.campusCardId = campusCardId;
+                //logInStudent('Bert', 42);
+
+
+                request.get({
+                        url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+                    },
+                    function (error, response, body) {
+                        if (response.statusCode == 409) {
+                            //StatusCode 409, error: user is not mapped
+                            console.log('Student not found');
+                            //TODO
+                        }
+
+                        if (response.statusCode == 200) {
+                            //StatusCode 200 user is mapped and exists on server
+                            body = JSON.parse(body);
+                            //TODO show coins and student name on screen
+                            //TODO set student model
+                            logInStudent(body.studentName, body.quota);
+
+                            if (body.quota > 0) {
+                                //TODO enable coffeeoutput button
+                            }
+
+                            //TODO eventlistener if button is pushed, remove coin from model, update coin on server
+                            //TODO say thank you on screen "Danke, {student.name}" First Row
+                            //TODO show left coffecoins on screen "{student.quota} Kaffee übrig" Second Row
+
+                        }
+
+                        //TODO errorhandling for server request
+                        if (error) {
+                            console.log(error);
+                        }
+
+                    }).auth('woda1017', 'woda1017');
+
+                //TODO disable coffeeoutput button
+                //TODO Restart poll process
+            }
+
+            read();
+        } else {
+
+            if(coffeeMachine.isStudentLoggedIn == true) {
+                console.log('no Tag');
+                currentStudent.campusCardId = '';
+                logOutStudent();
+            }
+
+            read();
+        }
+        //TODO parse error
+    });
+}
+
+serialport.list(function (err, ports) {
+    if (err) {
+        throw err;
+    }
+
+    ports.forEach(function (port) {
+        if (!!port.manufacturer) {
+            console.log('checking port:' + port.manufacturer);
+            console.log('port:' + port.comName);
+            if (port.manufacturer.indexOf("Arduino") >= 0) {
+                openSerialPort(port.comName);
+            }
+        }
+    });
+});
+
+function openSerialPort(portName) {
+    var serial = new serialport.SerialPort(portName, {
+        baudrate: 9600,
+        parser: serialport.parsers.readline('\n')
+    });
+
+    serial.on("open", function () {
+        console.log('serial port is now open');
+        serial.on('data', function (data) {
+
+            try {
+                var jsonData = JSON.parse(data);
+                var telemetryData = {
+                    temperature: jsonData.temperature,
+                    humidity: jsonData.humidity,
+                    createdAt: new Date().getTime()
+
+                };
+                postTelemetryData(JSON.stringify(telemetryData));
+                console.log('data received: ' + JSON.stringify(telemetryData));
+            } catch (err) {
+                console.error('Error parsing Data from Arduino: ' + data);
+                console.error(err);
+            }
+        });
+    });
+}
+
+function postTelemetryData(sensorData) {
+
+    options.path = '/api/telemetry';
+
+    var request = http.request(options, function (response) {
+        console.log('STATUS: ' + response.statusCode);
+        response.on('data', function (data) {
+            console.log('BODY: ' + data);
+        });
+
+        response.on('error', function (error) {
+            //TODO errorhandling for connection timeout
+            console.error(error)
+        });
+    });
+
+    request.write(sensorData);
+    request.end();
+}
+
+var emptyRow = "                ";
+var lcdStudentInfoRow = "";
+var lcdSecondRow = "2. Reihe";
+var firstRowDefault = "SmartCoffee";
+var lcdFirstRow = firstRowDefault;
+
+var coffeeMachine = {};
+coffeeMachine.isStudentLoggedIn = false;
+coffeeMachine.temperature = 57;
+coffeeMachine.availableCoffees = 200;
+coffeeMachine.coffeeFinishTimestamp = Date.now();
+
+var student = {};
+student.name = "Hello";
+student.quota = 100;
+
+//Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
+//Todo method for sutdents, if the card is not mapped on the server
+//Todo default message if no student is logged in
+
+
+//Todo export method method to set First Row
+function setLcdFirstRowStudentInfo () {
+    lcdStudentInfoRow = "Hi " + student.name + emptyRow;
+    ausgabetext = lcdFirstRow;
+
+    if (coffeeMachine.isStudentLoggedIn == true) {
+        if (student.quota < 10) {
+            lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 13) +
+                "(" + student.quota + ")";
+        }
+        else {
+            lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 12) +
+                "(" + student.quota + ")";
+        }
+    }
+}
+
+//Todo export
+function setLcdSecondRow() {
+    if (coffeeMachine.availableCoffees > 0) {
+        lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.availableCoffees + "Kaffee" + "        ";
+    }
+    else {
+        lcdSecondRow = "Mach mehr Kaffee! ";
+    }
+}
+
+
+lcd.on('ready', function () {
+    setInterval(function () {
+
+        setLcdSecondRow();
+
+        lcd.setCursor(0, 0);
+        ausgabetext = lcdFirstRow + emptyRow;
+
+
+        lcd.print(ausgabetext.substring(0, 16));
+
+        lcd.once('printed', function () {
+            lcd.setCursor(0, 1); // col 0, row 1
+            lcd.print(lcdSecondRow.substring(0, 16)); // print date
+        });
+    }, 1000);
+});
+
+function logInStudent(name, coffeeContingent) {
+
+    coffeeMachine.isStudentLoggedIn = true;
+    student.name = name;
+    student.quota = coffeeContingent;
+
+    setLcdFirstRowStudentInfo();
+
+    setTimeout(function () {
+        firstRowDefault = lcdStudentInfoRow;
+        lcdFirstRow = firstRowDefault;
+    }, 30);
+
+    intern_led.writeSync(1);
+    //Wenn noch Kaffee da ist der Student noch Kontingent hat soll der Button leuchten
+    if (student.quota > 0 && coffeeMachine.availableCoffees > 0) {
+        button_led.writeSync(1);
+    }
+}
+
+function logOutStudent() {
+
+    coffeeMachine.isStudentLoggedIn = false;
+    student.name = "";
+    student.quota = 0;
+
+    lcdFirstRow = "Ausgeloggt";
+
+    intern_led.writeSync(0);
+    button_led.writeSync(0);
+
+    setTimeout(function () {
+        firstRowDefault = "SmartCoffee";
+        lcdFirstRow = firstRowDefault;
+    }, 1500);
+
+}
+
+/*
+ lcd.on('ready', function() {
+ lcd.setCursor(16, 0);
+ lcd.autoscroll();
+ print('SmartCoffee@HsKa - 7Kaffee verfuegbar - Temperatur 65C ');
+ });
+ */
+
+function print(str, pos) {
+    pos = pos || 0;
+
+    if (pos === str.length) {
+        pos = 0;
+    }
+
+    lcd.print(str[pos]);
+
+    setTimeout(function () {
+        print(str, pos + 1);
+    }, 300);
+}
+
+// If ctrl+c is hit, free resources and exit.
+process.on('SIGINT', function () {
+    lcd.clear();
+    lcd.close();
+    process.exit();
 });
 
 /*
@@ -69,8 +353,6 @@ button.watch(function(err, value){
 //Zeigt an, ob gerade ein Kaffee rausgelassen wird
 var coffee_output_in_use = false;
 
-
-
 //Funktion welche die Ausgabe des Kaffees regelt
 function get_coffee(){
 
@@ -80,27 +362,27 @@ function get_coffee(){
     }
 
     //Kaffeemaschine ist leer
-    else if(coffeeMachine.available_coffees <= 0){
+    else if(coffeeMachine.availableCoffees <= 0){
         console.log("Kaffetopf ist leer - bitte wieder auff�llen!");
         lcdFirstRow = "Kaffee leer!         ";
         lcdSecondRow = "Mach neuen Kaffee!";
     }
 
     //Student ist nicht eingeloggt
-    else if(coffeeMachine.student_logged_in==false){
+    else if(coffeeMachine.isStudentLoggedIn==false){
         console.log("Kein Student eingeloggt! - Bitte einloggen");
         lcdFirstRow = "Bitte Einloggen!";
         setTimeout(function() {
-            lcdFirstRow = lcdFirstRowDefault;
+            lcdFirstRow = firstRowDefault;
         }, 2000);
     }
 
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
-    else if(logged_in_student.contingent<=0){
+    else if(student.quota<=0){
         console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auff�llen, will er nicht einen schmerzvollen Erm�dungstod sterben");
         lcdFirstRow = "Kontingent leer!";
         setTimeout(function() {
-            lcdFirstRow = lcdFirstRowDefault;
+            lcdFirstRow = firstRowDefault;
         }, 2000);
     }
 
@@ -120,11 +402,11 @@ function get_coffee(){
             console.log("Kaffee stopp !!");
             lcdFirstRow = "Kaffee fertig!";
 
-            coffeeMachine.available_coffees--;
-            logged_in_student.contingent--;
+            coffeeMachine.availableCoffees--;
+            student.quota--;
 
             //Wenn der Student noch Kontingent hat soll der Button leuchten
-            if(logged_in_student.contingent<=0 || coffeeMachine.available_coffees<=0){button_led.writeSync(0);}
+            if(student.quota<=0 || coffeeMachine.availableCoffees<=0){button_led.writeSync(0);}
 
 
             // -----------------------------------------------------------
@@ -134,17 +416,17 @@ function get_coffee(){
             // -----------------------------------------------------------
 
             setTimeout(function() {
-                //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zur�cksetzen "Name  (KaffeekontingentAnz)""
+                //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
                 setLcdFirstRowStudentInfo();
-                lcdFirstRowDefault = lcdStudentInfoRow;
-                lcdFirstRow = lcdFirstRowDefault;
+                firstRowDefault = lcdStudentInfoRow;
+                lcdFirstRow = firstRowDefault;
 
                 //Kaffeeausgabe wieder auf false setzte. Ab jetzt kann wieder Kaffee geortert weden
                 coffee_output_in_use = false;
                 console.log("Now you can get moooooore Coffee");
 
                 //Wenn noch Kaffee da ist der Student noch Kontingent hat soll der Button leuchten
-                if(logged_in_student.contingent>0 && coffeeMachine.available_coffees>0){button_led.writeSync(1);}
+                if(student.quota>0 && coffeeMachine.availableCoffees>0){button_led.writeSync(1);}
 
             }, 3000);
 
@@ -241,125 +523,6 @@ app.get('/login/:username/:kontingent', function (req, res) {
 app.get('/update_coffee_aount_in_pot/:coffee_number', function (req, res) {
     var coffee_number = req.params.coffee_number;
     //  res.send('An!');
-    coffeeMachine.available_coffees = coffee_number;
+    coffeeMachine.availableCoffees = coffee_number;
 
 });
-
-read();
-
-function read() {
-    execFile('nfc-list', function (error, stdout, stderr) {
-        var searchString = '(NFCID1):';
-
-        if (stdout.indexOf(searchString) >= 0) {
-            var tempString = stdout.slice(stdout.indexOf(searchString));
-            var campusCardId = tempString.substring(tempString.indexOf(':') + 1, tempString.indexOf('\n'));
-
-            campusCardId = campusCardId.trim();
-            campusCardId = campusCardId.replace(/ /g, '');
-            console.log('Tag detected with UID: ' + campusCardId);
-
-            if (campusCardId != currentStudent.campusCardId) {
-                currentStudent.campusCardId = campusCardId;
-
-                request.get({
-                        url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
-                    },
-                    function (error, response, body) {
-                        if (response.statusCode == 409) {
-                            //StatusCode 409, error: user is not mapped
-                            console.log('Student not found');
-                        }
-
-                        if (response.statusCode == 200) {
-                            //StatusCode 200 user is mapped and exists on server
-                            console.log(body);
-                        }
-
-                        console.log(error);
-
-                    }).auth('woda1017', 'woda1017');
-
-
-                //TODO Send request to the server, check if ID is Mapped to a Student, If not show message on display, else verfify if student has enough coins
-                //TODO show coins on screen
-                //TODO enable coffeeoutput button
-                //TODO remove one coin if the student pushes the button.
-                //TODO disable coffeeoutput button
-                //TODO show left coffecoins on screen
-                //TODO say thank youu on screen
-                //TODO Restart poll process
-            }
-            read();
-        } else {
-            console.log('no Tag');
-            currentStudent.campusCardId = '';
-            read();
-        }
-        //TODO parse error
-    });
-}
-
-serialport.list(function (err, ports) {
-    if (err) {
-        throw err;
-    }
-
-    ports.forEach(function (port) {
-        if (!!port.manufacturer) {
-            console.log('checking port:' + port.manufacturer);
-            console.log('port:' + port.comName);
-            if (port.manufacturer.indexOf("Arduino") >= 0) {
-                openSerialPort(port.comName);
-            }
-        }
-    });
-});
-
-function openSerialPort(portName) {
-    var serial = new serialport.SerialPort(portName, {
-        baudrate: 9600,
-        parser: serialport.parsers.readline('\n')
-    });
-
-    serial.on("open", function () {
-        console.log('serial port is now open');
-        serial.on('data', function (data) {
-
-            try {
-                var jsonData = JSON.parse(data);
-                var telemetryData = {
-                    temperature: jsonData.temperature,
-                    humidity: jsonData.humidity,
-                    createdAt: new Date().getTime()
-
-                };
-                postTelemetryData(JSON.stringify(telemetryData));
-                console.log('data received: ' + JSON.stringify(telemetryData));
-            } catch (err) {
-                console.error('Error parsing Data from Arduino: ' + data);
-                console.error(err);
-            }
-        });
-    });
-}
-
-function postTelemetryData(sensorData) {
-
-    options.path = '/api/telemetry';
-
-    var request = http.request(options, function (response) {
-        console.log('STATUS: ' + response.statusCode);
-        response.on('data', function (data) {
-            console.log('BODY: ' + data);
-        });
-
-        response.on('error', function (error) {
-            //TODO errorhandling for connection timeout
-            console.error(error)
-        });
-    });
-
-    request.write(sensorData);
-    request.end();
-}
