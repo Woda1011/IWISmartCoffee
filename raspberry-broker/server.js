@@ -13,17 +13,16 @@ var lcd = new lcdscreen({
     rows: 2
 });
 
-var options = {
-    host: '127.0.0.1',
-    port: '8080',
-    //host: 'www.smartcoffee.event-news.org',
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'}
-};
-
 var currentStudent = {
     campusCardId: ''
 };
+
+const systemUser = {
+    name: 'pius1234',
+    password: 'Sm4rtC0ff332016!'
+};
+
+var xxsrfToken = '';
 
 app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
@@ -58,9 +57,11 @@ function read() {
 
                 request.get({
                     //TODO update url to prod environment
-                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log',
+                        jar: true
                     },
                     function (error, response, body) {
+                        xxsrfToken = response.headers['x-xsrf-token'];
                         console.log(body);
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
@@ -90,7 +91,7 @@ function read() {
                             console.log(error);
                         }
 
-                    }).auth('pius1234', 'Sm4rtC0ff332016!');
+                    }).auth(systemUser.name, systemUser.password);
 
                 //TODO disable coffeeoutput button
                 //TODO Restart poll process
@@ -156,6 +157,14 @@ function openSerialPort(portName) {
 }
 
 function postTelemetryData(sensorData) {
+
+    var options = {
+        host: '127.0.0.1',
+        port: '8080',
+        //host: 'www.smartcoffee.event-news.org',
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    };
 
     options.path = '/api/telemetry';
 
@@ -405,12 +414,7 @@ function get_coffee(){
                 button_led.writeSync(0);
             }
 
-
-            // -----------------------------------------------------------
-            // -----------------------------------------------------------
-            // ToDo:Hier Http Request der dies auch in Backend anpasst ---
-            // -----------------------------------------------------------
-            // -----------------------------------------------------------
+            updateCoffeeLogForStudent(currentStudent.campusCardId);
 
             setTimeout(function() {
                 //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
@@ -431,9 +435,20 @@ function get_coffee(){
     } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
 }
 
-function updateCoffeeLogForStudent() {
-    request.get({
-            url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+function updateCoffeeLogForStudent(campusCardId) {
+    console.log('updating quota');
+
+    request({
+            auth: {
+                user: systemUser.name,
+                pass: systemUser.password
+            },
+            method: 'POST',
+            url: 'http://192.168.0.103:8080/api/students/' + campusCardId + '/coffee-log',
+            jar: true,
+            headers: {
+                'x-xsrf-token': xxsrfToken
+            }
         },
         function (error, response, body) {
             if (response.statusCode == 409) {
@@ -443,29 +458,12 @@ function updateCoffeeLogForStudent() {
             }
 
             if (response.statusCode == 200) {
-                //StatusCode 200 user is mapped and exists on server
-                body = JSON.parse(body);
-                //TODO show coins and student name on screen
-                //TODO set student model
-                logInStudent(body.studentName, body.quota);
-
-                if (body.quota > 0) {
-                    //TODO enable coffeeoutput button
-                }
-
-                //TODO eventlistener if button is pushed, remove coin from model, update coin on server
-                //TODO say thank you on screen "Danke, {student.name}" First Row
-                //TODO show left coffecoins on screen "{student.quota} Kaffee übrig" Second Row
-
+                console.log('Quota updated');
             }
 
             //TODO errorhandling for server request
             if (error) {
                 console.log(error);
             }
-
-        }).auth('woda1017', 'woda1017');
-
-    //TODO disable coffeeoutput button
-    //TODO Restart poll process
+        });
 }
