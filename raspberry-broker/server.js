@@ -193,8 +193,8 @@ coffeeMachine.availableCoffees = 200;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
 
 var student = {};
-student.name = "Hello";
-student.quota = 100;
+student.name = "";
+student.quota = 0;
 
 //Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
 //Todo method for sutdents, if the card is not mapped on the server
@@ -379,7 +379,7 @@ function get_coffee(){
 
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
     else if(student.quota<=0){
-        console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auff�llen, will er nicht einen schmerzvollen Erm�dungstod sterben");
+        console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auffüllen, will er nicht einen schmerzvollen Ermüdungstod sterben");
         lcdFirstRow = "Kontingent leer!";
         setTimeout(function() {
             lcdFirstRow = firstRowDefault;
@@ -388,7 +388,7 @@ function get_coffee(){
 
     //Student ist eingeloggt und hat noch Kaffeekontingent
     else{
-        //Weitere Kaffeeausgabeversuche w�hrend der Ausgabe blockieren
+        //Weitere Kaffeeausgabeversuche waehrend der Ausgabe blockieren
         coffee_output_in_use=true;
         //Kaffeeausgabe starten
         output_water.writeSync(1);
@@ -406,7 +406,9 @@ function get_coffee(){
             student.quota--;
 
             //Wenn der Student noch Kontingent hat soll der Button leuchten
-            if(student.quota<=0 || coffeeMachine.availableCoffees<=0){button_led.writeSync(0);}
+            if (student.quota <= 0 || coffeeMachine.availableCoffees <= 0) {
+                button_led.writeSync(0);
+            }
 
 
             // -----------------------------------------------------------
@@ -526,3 +528,43 @@ app.get('/update_coffee_aount_in_pot/:coffee_number', function (req, res) {
     coffeeMachine.availableCoffees = coffee_number;
 
 });
+
+function updateCoffeeLogForStudent() {
+    request.get({
+            url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+        },
+        function (error, response, body) {
+            if (response.statusCode == 409) {
+                //StatusCode 409, error: user is not mapped
+                console.log('Student not found');
+                //TODO
+            }
+
+            if (response.statusCode == 200) {
+                //StatusCode 200 user is mapped and exists on server
+                body = JSON.parse(body);
+                //TODO show coins and student name on screen
+                //TODO set student model
+                logInStudent(body.studentName, body.quota);
+
+                if (body.quota > 0) {
+                    //TODO enable coffeeoutput button
+                }
+
+                //TODO eventlistener if button is pushed, remove coin from model, update coin on server
+                //TODO say thank you on screen "Danke, {student.name}" First Row
+                //TODO show left coffecoins on screen "{student.quota} Kaffee übrig" Second Row
+
+            }
+
+            //TODO errorhandling for server request
+            if (error) {
+                console.log(error);
+            }
+
+        }).auth('woda1017', 'woda1017');
+
+    //TODO disable coffeeoutput button
+    //TODO Restart poll process
+}
+}
