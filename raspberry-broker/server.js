@@ -13,27 +13,19 @@ var lcd = new lcdscreen({
     rows: 2
 });
 
-var options = {
-    host: '127.0.0.1',
-    port: '8080',
-    //host: 'www.smartcoffee.event-news.org',
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'}
-};
-
 var currentStudent = {
     campusCardId: ''
 };
 
+const systemUser = {
+    name: 'pius1234',
+    password: 'Sm4rtC0ff332016!'
+};
+
+var xxsrfToken = '';
+
 app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
-});
-
-app.get('/login/:username/:kontingent', function (req, res) {
-    //  res.send('An!');
-    var username = req.params.username;
-    var kontingent = req.params.kontingent;
-    logInStudent(username, kontingent ); //Math.round(Math.random()*20)
 });
 
 read();
@@ -64,9 +56,13 @@ function read() {
 
 
                 request.get({
-                        url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+                    //TODO update url to prod environment
+                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log',
+                        jar: true
                     },
                     function (error, response, body) {
+                        xxsrfToken = response.headers['x-xsrf-token'];
+                        console.log(body);
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
@@ -95,7 +91,7 @@ function read() {
                             console.log(error);
                         }
 
-                    }).auth('woda1017', 'woda1017');
+                    }).auth(systemUser.name, systemUser.password);
 
                 //TODO disable coffeeoutput button
                 //TODO Restart poll process
@@ -162,6 +158,14 @@ function openSerialPort(portName) {
 
 function postTelemetryData(sensorData) {
 
+    var options = {
+        host: '127.0.0.1',
+        port: '8080',
+        //host: 'www.smartcoffee.event-news.org',
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    };
+
     options.path = '/api/telemetry';
 
     var request = http.request(options, function (response) {
@@ -193,8 +197,8 @@ coffeeMachine.availableCoffees = 200;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
 
 var student = {};
-student.name = "Hello";
-student.quota = 100;
+student.name = "";
+student.quota = 0;
 
 //Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
 //Todo method for sutdents, if the card is not mapped on the server
@@ -379,7 +383,7 @@ function get_coffee(){
 
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
     else if(student.quota<=0){
-        console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auff�llen, will er nicht einen schmerzvollen Erm�dungstod sterben");
+        console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auffüllen, will er nicht einen schmerzvollen Ermüdungstod sterben");
         lcdFirstRow = "Kontingent leer!";
         setTimeout(function() {
             lcdFirstRow = firstRowDefault;
@@ -388,7 +392,7 @@ function get_coffee(){
 
     //Student ist eingeloggt und hat noch Kaffeekontingent
     else{
-        //Weitere Kaffeeausgabeversuche w�hrend der Ausgabe blockieren
+        //Weitere Kaffeeausgabeversuche waehrend der Ausgabe blockieren
         coffee_output_in_use=true;
         //Kaffeeausgabe starten
         output_water.writeSync(1);
@@ -406,14 +410,11 @@ function get_coffee(){
             student.quota--;
 
             //Wenn der Student noch Kontingent hat soll der Button leuchten
-            if(student.quota<=0 || coffeeMachine.availableCoffees<=0){button_led.writeSync(0);}
+            if (student.quota <= 0 || coffeeMachine.availableCoffees <= 0) {
+                button_led.writeSync(0);
+            }
 
-
-            // -----------------------------------------------------------
-            // -----------------------------------------------------------
-            // ToDo:Hier Http Request der dies auch in Backend anpasst ---
-            // -----------------------------------------------------------
-            // -----------------------------------------------------------
+            updateCoffeeLogForStudent(currentStudent.campusCardId);
 
             setTimeout(function() {
                 //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
@@ -434,95 +435,35 @@ function get_coffee(){
     } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
 }
 
-app.get('/', function (req, res) {
-    res.send('Hallo Liebhaber Koffeeinhaltiger Hei�getr�nke! Willkommen bei Smart Coffee!');
-});
+function updateCoffeeLogForStudent(campusCardId) {
+    console.log('updating quota');
 
-app.get('/light/on', function (req, res) {
-    res.send('An!');
-    intern_led.writeSync(1);
-});
+    request({
+            auth: {
+                user: systemUser.name,
+                pass: systemUser.password
+            },
+            method: 'POST',
+            url: 'http://192.168.0.103:8080/api/students/' + campusCardId + '/coffee-log',
+            jar: true,
+            headers: {
+                'x-xsrf-token': xxsrfToken
+            }
+        },
+        function (error, response, body) {
+            if (response.statusCode == 409) {
+                //StatusCode 409, error: user is not mapped
+                console.log('Student not found');
+                //TODO
+            }
 
-app.get('/button_led/on', function (req, res) {
-    res.send('button_led on!');
-    button_led.writeSync(1);
-});
+            if (response.statusCode == 200) {
+                console.log('Quota updated');
+            }
 
-app.get('/button_led/off', function (req, res) {
-    res.send('button_led on!');
-    button_led.writeSync(0);
-});
-
-app.get('/light/short', function (req, res) {
-    res.send('Licht 1sec an!');
-    intern_led.writeSync(1);
-    console.log("Licht 1 an");
-
-    setTimeout(function () {
-        intern_led.writeSync(0);
-        console.log("Licht 1 aus");
-    }, 1000);
-
-});
-
-app.get('/light/off', function (req, res) {
-    res.send('Aus!');
-    intern_led.writeSync(0);
-});
-
-app.get('/output_water/on', function (req, res) {
-    res.send('2 An!');
-    output_water.writeSync(1);
-});
-
-app.get('/output_water/off', function (req, res) {
-    res.send('A2 us!');
-    output_water.writeSync(0);
-});
-
-app.get('/get_coffee', function (req, res) {
-    //Kaffee ausgeben
-    get_coffee();
-});
-
-app.get('/power/on', function (req, res) {
-    // Send
-    rfSend(5393, 0, function (error, stdout) {   //Send 5393
-        if (!error) {
-            console.log(stdout); //Should display 5393
-            res.send('Funksteckdose ueber 433hz eingeschaltet!');
-        }
-        else {
-            res.send('Fehler!')
-        }
-    });
-});
-
-app.get('/power/off', function (req, res) {
-    // Send
-    rfSend(5396, 0, function (error, stdout) {   //Send 5393
-        if (!error) {
-            console.log(stdout); //Should display 5393
-            res.send('Funksteckdose ueber 433hz ausgeschaltet!');
-        }
-        else {
-            res.send('Fehler!')
-        }
-    });
-});
-
-
-app.get('/login/:username/:kontingent', function (req, res) {
-    //  res.send('An!');
-    var username = req.params.username;
-    var kontingent = req.params.kontingent;
-    logInStudent(username, kontingent); //Math.round(Math.random()*20)
-});
-
-
-app.get('/update_coffee_aount_in_pot/:coffee_number', function (req, res) {
-    var coffee_number = req.params.coffee_number;
-    //  res.send('An!');
-    coffeeMachine.availableCoffees = coffee_number;
-
-});
+            //TODO errorhandling for server request
+            if (error) {
+                console.log(error);
+            }
+        });
+}
