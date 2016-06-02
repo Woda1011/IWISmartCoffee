@@ -29,13 +29,6 @@ app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
 });
 
-app.get('/login/:username/:kontingent', function (req, res) {
-    //  res.send('An!');
-    var username = req.params.username;
-    var kontingent = req.params.kontingent;
-    logInStudent(username, kontingent ); //Math.round(Math.random()*20)
-});
-
 read();
 
 function extractCampusCardId(stdout, searchString) {
@@ -64,9 +57,11 @@ function read() {
 
 
                 request.get({
-                        url: 'http://192.168.0.109:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
+                    //TODO update url to prod environment
+                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log'
                     },
                     function (error, response, body) {
+                        console.log(body);
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
@@ -95,7 +90,7 @@ function read() {
                             console.log(error);
                         }
 
-                    }).auth('woda1017', 'woda1017');
+                    }).auth('pius1234', 'Sm4rtC0ff332016!');
 
                 //TODO disable coffeeoutput button
                 //TODO Restart poll process
@@ -566,5 +561,4 @@ function updateCoffeeLogForStudent() {
 
     //TODO disable coffeeoutput button
     //TODO Restart poll process
-}
 }
