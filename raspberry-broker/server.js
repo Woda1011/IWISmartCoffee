@@ -22,7 +22,9 @@ var lcd = new lcdscreen({
     rows: 2
 });
 
-var currentStudent = {
+var student = {
+    name: '',
+    quota: 0,
     campusCardId: ''
 };
 
@@ -46,7 +48,7 @@ function extractCampusCardId(stdout, searchString) {
 
 function readNfcTag() {
     function hasCampusCardIdChanged(campusCardId) {
-        return campusCardId != currentStudent.campusCardId;
+        return campusCardId != student.campusCardId;
     }
 
     function isCampusCardDetected(consoleOutput, searchString) {
@@ -60,10 +62,10 @@ function readNfcTag() {
             var campusCardId = extractCampusCardId(stdout, searchString);
 
             if (hasCampusCardIdChanged(campusCardId)) {
-                currentStudent.campusCardId = campusCardId;
+                student.campusCardId = campusCardId;
 
                 request.get({
-                        url: '/students/' + currentStudent.campusCardId + '/coffee-log'
+                        url: '/students/' + student.campusCardId + '/coffee-log'
                     },
                     function (error, response, body) {
                         xxsrfToken = response.headers['x-xsrf-token'];
@@ -89,10 +91,10 @@ function readNfcTag() {
         } else {
             if(coffeeMachine.isStudentLoggedIn == true) {
                 console.log('no Tag');
-                currentStudent.campusCardId = '';
+                student.campusCardId = '';
                 logOutStudent();
                 //TODO waiting for new Server API
-                request.get('/students/' + currentStudent.campusCardId + '/coffee-log');
+                request.get('/students/' + student.campusCardId + '/coffee-log');
             }
             readNfcTag();
         }
@@ -184,16 +186,12 @@ coffeeMachine.temperature = 57;
 coffeeMachine.availableCoffees = 200;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
 
-var student = {};
-student.name = "";
-student.quota = 0;
-
 //Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
 //Todo method for sutdents, if the card is not mapped on the server
 //Todo default message if no student is logged in
 
 //Todo export method method to set First Row
-function setLcdFirstRowStudentInfo () {
+function setLcdFirstRowStudentInfo() {
     lcdStudentInfoRow = "Hi " + student.name + emptyRow;
     ausgabetext = lcdFirstRow;
 
@@ -201,8 +199,7 @@ function setLcdFirstRowStudentInfo () {
         if (student.quota < 10) {
             lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 13) +
                 "(" + student.quota + ")";
-        }
-        else {
+        } else {
             lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 12) +
                 "(" + student.quota + ")";
         }
@@ -213,23 +210,17 @@ function setLcdFirstRowStudentInfo () {
 function setLcdSecondRow() {
     if (coffeeMachine.availableCoffees > 0) {
         lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.availableCoffees + "Kaffee" + "        ";
-    }
-    else {
+    } else {
         lcdSecondRow = "Mach mehr Kaffee! ";
     }
 }
 
 lcd.on('ready', function () {
     setInterval(function () {
-
         setLcdSecondRow();
-
         lcd.setCursor(0, 0);
         ausgabetext = lcdFirstRow + emptyRow;
-
-
         lcd.print(ausgabetext.substring(0, 16));
-
         lcd.once('printed', function () {
             lcd.setCursor(0, 1); // col 0, row 1
             lcd.print(lcdSecondRow.substring(0, 16)); // print date
@@ -238,13 +229,11 @@ lcd.on('ready', function () {
 });
 
 function logInStudent(name, coffeeContingent) {
-
     coffeeMachine.isStudentLoggedIn = true;
     student.name = name;
     student.quota = coffeeContingent;
 
     setLcdFirstRowStudentInfo();
-
     setTimeout(function () {
         firstRowDefault = lcdStudentInfoRow;
         lcdFirstRow = firstRowDefault;
@@ -258,21 +247,17 @@ function logInStudent(name, coffeeContingent) {
 }
 
 function logOutStudent() {
-
     coffeeMachine.isStudentLoggedIn = false;
     student.name = "";
     student.quota = 0;
-
     lcdFirstRow = "Ausgeloggt";
 
     intern_led.writeSync(0);
     button_led.writeSync(0);
-
     setTimeout(function () {
         firstRowDefault = "SmartCoffee";
         lcdFirstRow = firstRowDefault;
     }, 1500);
-
 }
 
 /*
@@ -285,13 +270,11 @@ function logOutStudent() {
 
 function print(str, pos) {
     pos = pos || 0;
-
     if (pos === str.length) {
         pos = 0;
     }
 
     lcd.print(str[pos]);
-
     setTimeout(function () {
         print(str, pos + 1);
     }, 300);
@@ -400,7 +383,7 @@ function get_coffee(){
                 button_led.writeSync(0);
             }
 
-            updateCoffeeLogForStudent(currentStudent.campusCardId);
+            updateCoffeeLogForStudent(student.campusCardId);
 
             setTimeout(function() {
                 //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
