@@ -28,7 +28,7 @@ app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
 });
 
-read();
+readNfcTag();
 
 function extractCampusCardId(stdout, searchString) {
     var tempString = stdout.slice(stdout.indexOf(searchString));
@@ -42,7 +42,7 @@ function extractCampusCardId(stdout, searchString) {
 
 
 
-function read() {
+function readNfcTag() {
     function hasCampusCardIdChanged(campusCardId) {
         return campusCardId != currentStudent.campusCardId;
     }
@@ -99,7 +99,7 @@ function read() {
 
                 //TODO disable coffeeoutput button
             }
-            read();
+            readNfcTag();
         } else {
 
             if(coffeeMachine.isStudentLoggedIn == true) {
@@ -108,7 +108,7 @@ function read() {
                 logOutStudent();
             }
 
-            read();
+            readNfcTag();
         }
         //TODO parse error
     });
