@@ -299,13 +299,13 @@ var Gpio = require('onoff').Gpio,
 /*
  *      ------ ONOFF - FUER KOMMUNIKATION MIT 433HZ Modul ------
  */
-var rpi433    = require('rpi-433'),
+var rpi433 = require('rpi-433'),
     rfSniffer = rpi433.sniffer(17, 500), //Sniff on PIN 17 with a 500ms debounce delay
-    rfSend    = rpi433.sendCode;
+    rfSend = rpi433.sendCode;
 
 // Receive
 rfSniffer.on('codes', function (code) {
-    console.log('Code received: '+code);
+    console.log('Code received: ' + code);
 });
 
 // Send
@@ -315,66 +315,60 @@ rfSniffer.on('codes', function (code) {
  });
  */
 
-button.watch(function(err, value){
-    if (err) { throw err; }
-    else{ get_coffee(); }
+button.watch(function (err, value) {
+    if (err) {
+        throw err;
+    }
+    else {
+        get_coffee();
+    }
 });
-
-
-
 
 //Zeigt an, ob gerade ein Kaffee rausgelassen wird
 var coffee_output_in_use = false;
 
 //Funktion welche die Ausgabe des Kaffees regelt
 function get_coffee(){
-
     //Es wird gerade Kaffee rausgelassen
-    if(coffee_output_in_use==true){
+    if (coffee_output_in_use == true) {
         console.log("Bitte Warten - Kaffee wird bereits ausgegeben!");
     }
-
     //Kaffeemaschine ist leer
-    else if(coffeeMachine.availableCoffees <= 0){
-        console.log("Kaffetopf ist leer - bitte wieder auff�llen!");
+    else if (coffeeMachine.availableCoffees <= 0) {
+        console.log("Kaffetopf ist leer - bitte wieder auffüllen!");
         lcdFirstRow = "Kaffee leer!         ";
         lcdSecondRow = "Mach neuen Kaffee!";
     }
-
     //Student ist nicht eingeloggt
-    else if(coffeeMachine.isStudentLoggedIn==false){
+    else if (coffeeMachine.isStudentLoggedIn == false) {
         console.log("Kein Student eingeloggt! - Bitte einloggen");
         lcdFirstRow = "Bitte Einloggen!";
-        setTimeout(function() {
+        setTimeout(function () {
             lcdFirstRow = firstRowDefault;
         }, 2000);
     }
-
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
-    else if(student.quota<=0){
+    else if (student.quota <= 0) {
         console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auffüllen, will er nicht einen schmerzvollen Ermüdungstod sterben");
         lcdFirstRow = "Kontingent leer!";
-        setTimeout(function() {
+        setTimeout(function () {
             lcdFirstRow = firstRowDefault;
         }, 2000);
     }
-
     //Student ist eingeloggt und hat noch Kaffeekontingent
-    else{
+    else {
         //Weitere Kaffeeausgabeversuche waehrend der Ausgabe blockieren
-        coffee_output_in_use=true;
+        coffee_output_in_use = true;
         //Kaffeeausgabe starten
         output_water.writeSync(1);
         console.log("Kaffee marsch !!");
         lcdFirstRow = "Kaffee !!!!";
         //Button LED ausmachen um zu singnalisieren, dass man sich gerade keinen Kaffee bestellen kann
         button_led.writeSync(0);
-
-        setTimeout(function() {
+        setTimeout(function () {
             output_water.writeSync(0);
             console.log("Kaffee stopp !!");
             lcdFirstRow = "Kaffee fertig!";
-
             coffeeMachine.availableCoffees--;
             student.quota--;
 
@@ -384,8 +378,7 @@ function get_coffee(){
             }
 
             updateCoffeeLogForStudent(student.campusCardId);
-
-            setTimeout(function() {
+            setTimeout(function () {
                 //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
                 setLcdFirstRowStudentInfo();
                 firstRowDefault = lcdStudentInfoRow;
@@ -396,17 +389,16 @@ function get_coffee(){
                 console.log("Now you can get moooooore Coffee");
 
                 //Wenn noch Kaffee da ist der Student noch Kontingent hat soll der Button leuchten
-                if(student.quota>0 && coffeeMachine.availableCoffees>0){button_led.writeSync(1);}
-
+                if (student.quota > 0 && coffeeMachine.availableCoffees > 0) {
+                    button_led.writeSync(1);
+                }
             }, 3000);
-
         }, 1500);
-    } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
+    }
 }
 
 function updateCoffeeLogForStudent(campusCardId) {
     console.log('updating quota');
-
     request({
             method: 'POST',
             url: '/students/' + campusCardId + '/coffee-log',
