@@ -45,7 +45,7 @@ export class AddStudent {
     this.studentForm = this.FormBuilder.group({
       'firstName': ['', Validators.required],
       'lastName': ['', Validators.required],
-      'hskaId': ['', Validators.required],
+      'hskaId': ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(8)])],
       'password': ['', Validators.required],
       'campusCardId': ['', Validators.required]
     });

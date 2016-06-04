@@ -47,7 +47,7 @@ export class StudentDetails {
     this.campusCardForm = this.FormBuilder.group({
       'firstName': ['', Validators.required],
       'lastName': ['', Validators.required],
-      'hskaId': ['', Validators.required],
+      'hskaId': ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(8)])],
       'campusCardId': ['', Validators.required]
     });
 
