@@ -4,6 +4,15 @@ var serialport = require("serialport");
 var http = require('https');
 var execFile = require('child_process').execFile;
 var request = require('request');
+request = request.defaults({
+    baseUrl: 'http://192.168.0.103:8080/api',
+    auth: {
+        user: 'pius1234',
+        pass: 'Sm4rtC0ff332016'
+    },
+    jar:true
+});
+
 var lcdscreen = require('lcd');
 var lcd = new lcdscreen({
     rs: 12,
@@ -15,11 +24,6 @@ var lcd = new lcdscreen({
 
 var currentStudent = {
     campusCardId: ''
-};
-
-const systemUser = {
-    name: 'pius1234',
-    password: 'Sm4rtC0ff332016!'
 };
 
 var xxsrfToken = '';
@@ -61,9 +65,7 @@ function readNfcTag() {
                 currentStudent.campusCardId = campusCardId;
 
                 request.get({
-                    //TODO update url to prod environment, define request JS default
-                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log',
-                        jar: true
+                        url: '/students/' + currentStudent.campusCardId + '/coffee-log'
                     },
                     function (error, response, body) {
                         xxsrfToken = response.headers['x-xsrf-token'];
@@ -95,9 +97,9 @@ function readNfcTag() {
                         if (error) {
                             console.log(error);
                         }
-                    }).auth(systemUser.name, systemUser.password);
 
                 //TODO disable coffeeoutput button
+                    });
             }
             readNfcTag();
         } else {
@@ -441,13 +443,8 @@ function updateCoffeeLogForStudent(campusCardId) {
     console.log('updating quota');
 
     request({
-            auth: {
-                user: systemUser.name,
-                pass: systemUser.password
-            },
             method: 'POST',
-            url: 'http://192.168.0.103:8080/api/students/' + campusCardId + '/coffee-log',
-            jar: true,
+            url: '/students/' + campusCardId + '/coffee-log',
             headers: {
                 'x-xsrf-token': xxsrfToken
             }
