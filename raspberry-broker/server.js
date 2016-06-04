@@ -40,23 +40,28 @@ function extractCampusCardId(stdout, searchString) {
     return campusCardId;
 }
 
-function read() {
-    execFile('nfc-list', function (error, stdout, stderr) {
 
+
+function read() {
+    function hasCampusCardIdChanged(campusCardId) {
+        return campusCardId != currentStudent.campusCardId;
+    }
+
+    function isCampusCardDetected(consoleOutput, searchString) {
+        return consoleOutput.indexOf(searchString) >= 0;
+    }
+
+    execFile('nfc-list', function (error, stdout, stderr) {
         const searchString = '(NFCID1):';
 
-        //Card detected
-        if (stdout.indexOf(searchString) >= 0) {
+        if (isCampusCardDetected(stdout, searchString)) {
             var campusCardId = extractCampusCardId(stdout, searchString);
 
-            //only send request to server when the id has changed
-            if (campusCardId != currentStudent.campusCardId) {
+            if (hasCampusCardIdChanged(campusCardId)) {
                 currentStudent.campusCardId = campusCardId;
-                //logInStudent('Bert', 42);
-
 
                 request.get({
-                    //TODO update url to prod environment
+                    //TODO update url to prod environment, define request JS default
                         url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log',
                         jar: true
                     },
@@ -66,7 +71,7 @@ function read() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //TODO
+                            //TODO update Message on Screen
                         }
 
                         if (response.statusCode == 200) {
@@ -90,13 +95,10 @@ function read() {
                         if (error) {
                             console.log(error);
                         }
-
                     }).auth(systemUser.name, systemUser.password);
 
                 //TODO disable coffeeoutput button
-                //TODO Restart poll process
             }
-
             read();
         } else {
 
