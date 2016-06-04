@@ -44,8 +44,6 @@ function extractCampusCardId(stdout, searchString) {
     return campusCardId;
 }
 
-
-
 function readNfcTag() {
     function hasCampusCardIdChanged(campusCardId) {
         return campusCardId != currentStudent.campusCardId;
@@ -73,46 +71,32 @@ function readNfcTag() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //TODO update Message on Screen
+                            //TODO update Message on Screen "Deine Karte ist noch nicht zugeordnet..."
                         }
 
                         if (response.statusCode == 200) {
                             //StatusCode 200 user is mapped and exists on server
                             body = JSON.parse(body);
-                            //TODO show coins and student name on screen
-                            //TODO set student model
                             logInStudent(body.studentName, body.quota);
-
-                            if (body.quota > 0) {
-                                //TODO enable coffeeoutput button
-                            }
-
-                            //TODO eventlistener if button is pushed, remove coin from model, update coin on server
-                            //TODO say thank you on screen "Danke, {student.name}" First Row
-                            //TODO show left coffecoins on screen "{student.quota} Kaffee übrig" Second Row
-
                         }
-
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
                         }
-
-                //TODO disable coffeeoutput button
                     });
             }
             readNfcTag();
         } else {
-
             if(coffeeMachine.isStudentLoggedIn == true) {
                 console.log('no Tag');
                 currentStudent.campusCardId = '';
                 logOutStudent();
+                //TODO waiting for new Server API
+                request.get('/students/' + currentStudent.campusCardId + '/coffee-log');
             }
-
             readNfcTag();
         }
-        //TODO parse error
+        //TODO parse stderror
     });
 }
 
@@ -208,7 +192,6 @@ student.quota = 0;
 //Todo method for sutdents, if the card is not mapped on the server
 //Todo default message if no student is logged in
 
-
 //Todo export method method to set First Row
 function setLcdFirstRowStudentInfo () {
     lcdStudentInfoRow = "Hi " + student.name + emptyRow;
@@ -235,7 +218,6 @@ function setLcdSecondRow() {
         lcdSecondRow = "Mach mehr Kaffee! ";
     }
 }
-
 
 lcd.on('ready', function () {
     setInterval(function () {
