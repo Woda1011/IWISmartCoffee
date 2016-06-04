@@ -13,6 +13,9 @@
     </ion-col>
   </ion-row>
 
+  <ion-searchbar [(ngModel)]="searchQuery" (input)="loadStudents($event)" [hideCancelButton]="true"
+                 [debounce]="400"></ion-searchbar>
+
   <ion-list>
     <ion-item *ngFor="#student of students">
       <h3>{{student.firstName}} {{student.lastName}}</h3>

@@ -10,8 +10,10 @@ import {HttpService} from "../../shared/services/httpService";
 export class Students {
 
   private students: Student[];
+  private searchQuery;
 
   constructor(private nav: NavController, private HttpService: HttpService) {
+    this.searchQuery = '';
     this.loadStudents();
   }
 
@@ -19,8 +21,8 @@ export class Students {
     this.nav.push(AddStudent);
   }
 
-  private loadStudents() {
-    this.HttpService.getStudents().subscribe(
+  private loadStudents(searchbar?) {
+    this.HttpService.getStudents(searchbar ? searchbar.value : undefined).subscribe(
       (students: Student[]) => this.students = students
     )
   }

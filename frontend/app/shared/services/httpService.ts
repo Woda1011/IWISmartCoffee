@@ -1,9 +1,9 @@
 import {Injectable} from "angular2/core";
 import "rxjs/Rx";
-import {Telemetry, CoffeeLog, Student} from "../../_typings";
+import {Telemetry, Student} from "../../_typings";
 import {Observable} from "rxjs/Observable";
 import {AuthHttp} from "../../base/authHttp";
-import {Http} from "angular2/http";
+import {Http, URLSearchParams} from "angular2/http";
 
 @Injectable()
 export class HttpService {
@@ -29,8 +29,12 @@ export class HttpService {
     return this.authHttp.get("/api/students/" + hskaId + "/coffee-log");
   }
 
-  getStudents() {
-    return this.authHttp.get("/api/students").map(res => res.content);
+  getStudents(hskaId?: string) {
+    let params: URLSearchParams = new URLSearchParams();
+    if (hskaId && hskaId !== '') {
+      params.set('hskaId', hskaId);
+    }
+    return this.authHttp.get("/api/students", params).map(res => res.content);
   }
 
   addStudent(student: Student) {

@@ -21,10 +21,10 @@ export class AuthHttp {
     headers.append('X-XSRF-TOKEN', this.CookieService.get('XSRF-TOKEN'));
   }
 
-  get(url) {
+  get(url, params?) {
     let headers = new Headers();
     this.createAuthorizationHeaders(headers);
-    return this.http.get(url, {headers: headers})
+    return this.http.get(url, {headers: headers, search: params})
       .do(res => {
         this.checkIfXsrfTokenIsValid(res);
       })
