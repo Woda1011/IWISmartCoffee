@@ -51,7 +51,7 @@ public class StudentController {
             return this.studentRepository.findByIsDeletedFalse(pageable).map(StudentResource::new);
         }
 
-        return this.studentRepository.findByHskaIdAndIsDeletedFalse(hskaId, pageable).map
+        return this.studentRepository.findByHskaIdContainingAndIsDeletedFalse(hskaId, pageable).map
                 (StudentResource::new);
     }
 
