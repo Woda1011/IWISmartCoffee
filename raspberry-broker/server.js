@@ -4,6 +4,15 @@ var serialport = require("serialport");
 var http = require('https');
 var execFile = require('child_process').execFile;
 var request = require('request');
+request = request.defaults({
+    baseUrl: 'http://192.168.0.103:8080/api',
+    auth: {
+        user: 'pius1234',
+        pass: 'Sm4rtC0ff332016'
+    },
+    jar:true
+});
+
 var lcdscreen = require('lcd');
 var lcd = new lcdscreen({
     rs: 12,
@@ -13,13 +22,10 @@ var lcd = new lcdscreen({
     rows: 2
 });
 
-var currentStudent = {
+var student = {
+    name: '',
+    quota: 0,
     campusCardId: ''
-};
-
-const systemUser = {
-    name: 'pius1234',
-    password: 'Sm4rtC0ff332016!'
 };
 
 var xxsrfToken = '';
@@ -28,7 +34,7 @@ app.listen(3000, function () {
     console.log('Raspberry-Broker listening on port 3000!');
 });
 
-read();
+readNfcTag();
 
 function extractCampusCardId(stdout, searchString) {
     var tempString = stdout.slice(stdout.indexOf(searchString));
@@ -40,25 +46,26 @@ function extractCampusCardId(stdout, searchString) {
     return campusCardId;
 }
 
-function read() {
-    execFile('nfc-list', function (error, stdout, stderr) {
+function readNfcTag() {
+    function hasCampusCardIdChanged(campusCardId) {
+        return campusCardId != student.campusCardId;
+    }
 
+    function isCampusCardDetected(consoleOutput, searchString) {
+        return consoleOutput.indexOf(searchString) >= 0;
+    }
+
+    execFile('nfc-list', function (error, stdout, stderr) {
         const searchString = '(NFCID1):';
 
-        //Card detected
-        if (stdout.indexOf(searchString) >= 0) {
+        if (isCampusCardDetected(stdout, searchString)) {
             var campusCardId = extractCampusCardId(stdout, searchString);
 
-            //only send request to server when the id has changed
-            if (campusCardId != currentStudent.campusCardId) {
-                currentStudent.campusCardId = campusCardId;
-                //logInStudent('Bert', 42);
-
+            if (hasCampusCardIdChanged(campusCardId)) {
+                student.campusCardId = campusCardId;
 
                 request.get({
-                    //TODO update url to prod environment
-                        url: 'http://192.168.0.103:8080/api/students/' + currentStudent.campusCardId + '/coffee-log',
-                        jar: true
+                        url: '/students/' + student.campusCardId + '/coffee-log'
                     },
                     function (error, response, body) {
                         xxsrfToken = response.headers['x-xsrf-token'];
@@ -66,49 +73,32 @@ function read() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //TODO
+                            //TODO update Message on Screen "Deine Karte ist noch nicht zugeordnet..."
                         }
 
                         if (response.statusCode == 200) {
                             //StatusCode 200 user is mapped and exists on server
                             body = JSON.parse(body);
-                            //TODO show coins and student name on screen
-                            //TODO set student model
                             logInStudent(body.studentName, body.quota);
-
-                            if (body.quota > 0) {
-                                //TODO enable coffeeoutput button
-                            }
-
-                            //TODO eventlistener if button is pushed, remove coin from model, update coin on server
-                            //TODO say thank you on screen "Danke, {student.name}" First Row
-                            //TODO show left coffecoins on screen "{student.quota} Kaffee übrig" Second Row
-
                         }
-
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
                         }
-
-                    }).auth(systemUser.name, systemUser.password);
-
-                //TODO disable coffeeoutput button
-                //TODO Restart poll process
+                    });
             }
-
-            read();
+            readNfcTag();
         } else {
-
             if(coffeeMachine.isStudentLoggedIn == true) {
                 console.log('no Tag');
-                currentStudent.campusCardId = '';
+                student.campusCardId = '';
                 logOutStudent();
+                //TODO waiting for new Server API
+                request.get('/students/' + student.campusCardId + '/coffee-log');
             }
-
-            read();
+            readNfcTag();
         }
-        //TODO parse error
+        //TODO parse stderror
     });
 }
 
@@ -196,17 +186,12 @@ coffeeMachine.temperature = 57;
 coffeeMachine.availableCoffees = 200;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
 
-var student = {};
-student.name = "";
-student.quota = 0;
-
 //Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
 //Todo method for sutdents, if the card is not mapped on the server
 //Todo default message if no student is logged in
 
-
 //Todo export method method to set First Row
-function setLcdFirstRowStudentInfo () {
+function setLcdFirstRowStudentInfo() {
     lcdStudentInfoRow = "Hi " + student.name + emptyRow;
     ausgabetext = lcdFirstRow;
 
@@ -214,8 +199,7 @@ function setLcdFirstRowStudentInfo () {
         if (student.quota < 10) {
             lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 13) +
                 "(" + student.quota + ")";
-        }
-        else {
+        } else {
             lcdStudentInfoRow = lcdStudentInfoRow.substring(0, 12) +
                 "(" + student.quota + ")";
         }
@@ -226,24 +210,17 @@ function setLcdFirstRowStudentInfo () {
 function setLcdSecondRow() {
     if (coffeeMachine.availableCoffees > 0) {
         lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.availableCoffees + "Kaffee" + "        ";
-    }
-    else {
+    } else {
         lcdSecondRow = "Mach mehr Kaffee! ";
     }
 }
 
-
 lcd.on('ready', function () {
     setInterval(function () {
-
         setLcdSecondRow();
-
         lcd.setCursor(0, 0);
         ausgabetext = lcdFirstRow + emptyRow;
-
-
         lcd.print(ausgabetext.substring(0, 16));
-
         lcd.once('printed', function () {
             lcd.setCursor(0, 1); // col 0, row 1
             lcd.print(lcdSecondRow.substring(0, 16)); // print date
@@ -252,13 +229,11 @@ lcd.on('ready', function () {
 });
 
 function logInStudent(name, coffeeContingent) {
-
     coffeeMachine.isStudentLoggedIn = true;
     student.name = name;
     student.quota = coffeeContingent;
 
     setLcdFirstRowStudentInfo();
-
     setTimeout(function () {
         firstRowDefault = lcdStudentInfoRow;
         lcdFirstRow = firstRowDefault;
@@ -272,21 +247,17 @@ function logInStudent(name, coffeeContingent) {
 }
 
 function logOutStudent() {
-
     coffeeMachine.isStudentLoggedIn = false;
     student.name = "";
     student.quota = 0;
-
     lcdFirstRow = "Ausgeloggt";
 
     intern_led.writeSync(0);
     button_led.writeSync(0);
-
     setTimeout(function () {
         firstRowDefault = "SmartCoffee";
         lcdFirstRow = firstRowDefault;
     }, 1500);
-
 }
 
 /*
@@ -299,13 +270,11 @@ function logOutStudent() {
 
 function print(str, pos) {
     pos = pos || 0;
-
     if (pos === str.length) {
         pos = 0;
     }
 
     lcd.print(str[pos]);
-
     setTimeout(function () {
         print(str, pos + 1);
     }, 300);
@@ -330,13 +299,13 @@ var Gpio = require('onoff').Gpio,
 /*
  *      ------ ONOFF - FUER KOMMUNIKATION MIT 433HZ Modul ------
  */
-var rpi433    = require('rpi-433'),
+var rpi433 = require('rpi-433'),
     rfSniffer = rpi433.sniffer(17, 500), //Sniff on PIN 17 with a 500ms debounce delay
-    rfSend    = rpi433.sendCode;
+    rfSend = rpi433.sendCode;
 
 // Receive
 rfSniffer.on('codes', function (code) {
-    console.log('Code received: '+code);
+    console.log('Code received: ' + code);
 });
 
 // Send
@@ -346,66 +315,60 @@ rfSniffer.on('codes', function (code) {
  });
  */
 
-button.watch(function(err, value){
-    if (err) { throw err; }
-    else{ get_coffee(); }
+button.watch(function (err, value) {
+    if (err) {
+        throw err;
+    }
+    else {
+        get_coffee();
+    }
 });
-
-
-
 
 //Zeigt an, ob gerade ein Kaffee rausgelassen wird
 var coffee_output_in_use = false;
 
 //Funktion welche die Ausgabe des Kaffees regelt
 function get_coffee(){
-
     //Es wird gerade Kaffee rausgelassen
-    if(coffee_output_in_use==true){
+    if (coffee_output_in_use == true) {
         console.log("Bitte Warten - Kaffee wird bereits ausgegeben!");
     }
-
     //Kaffeemaschine ist leer
-    else if(coffeeMachine.availableCoffees <= 0){
-        console.log("Kaffetopf ist leer - bitte wieder auff�llen!");
+    else if (coffeeMachine.availableCoffees <= 0) {
+        console.log("Kaffetopf ist leer - bitte wieder auffüllen!");
         lcdFirstRow = "Kaffee leer!         ";
         lcdSecondRow = "Mach neuen Kaffee!";
     }
-
     //Student ist nicht eingeloggt
-    else if(coffeeMachine.isStudentLoggedIn==false){
+    else if (coffeeMachine.isStudentLoggedIn == false) {
         console.log("Kein Student eingeloggt! - Bitte einloggen");
         lcdFirstRow = "Bitte Einloggen!";
-        setTimeout(function() {
+        setTimeout(function () {
             lcdFirstRow = firstRowDefault;
         }, 2000);
     }
-
     //Student ist eingeloggt, aber kein Kaffee kontingent mehr
-    else if(student.quota<=0){
+    else if (student.quota <= 0) {
         console.log("Student hat kein Kaffeekontingent mehr und sollte sich jetzt schleunigst welches auffüllen, will er nicht einen schmerzvollen Ermüdungstod sterben");
         lcdFirstRow = "Kontingent leer!";
-        setTimeout(function() {
+        setTimeout(function () {
             lcdFirstRow = firstRowDefault;
         }, 2000);
     }
-
     //Student ist eingeloggt und hat noch Kaffeekontingent
-    else{
+    else {
         //Weitere Kaffeeausgabeversuche waehrend der Ausgabe blockieren
-        coffee_output_in_use=true;
+        coffee_output_in_use = true;
         //Kaffeeausgabe starten
         output_water.writeSync(1);
         console.log("Kaffee marsch !!");
         lcdFirstRow = "Kaffee !!!!";
         //Button LED ausmachen um zu singnalisieren, dass man sich gerade keinen Kaffee bestellen kann
         button_led.writeSync(0);
-
-        setTimeout(function() {
+        setTimeout(function () {
             output_water.writeSync(0);
             console.log("Kaffee stopp !!");
             lcdFirstRow = "Kaffee fertig!";
-
             coffeeMachine.availableCoffees--;
             student.quota--;
 
@@ -414,9 +377,8 @@ function get_coffee(){
                 button_led.writeSync(0);
             }
 
-            updateCoffeeLogForStudent(currentStudent.campusCardId);
-
-            setTimeout(function() {
+            updateCoffeeLogForStudent(student.campusCardId);
+            setTimeout(function () {
                 //lcdStudentInfoRow wieder auf  Basisinfodaten des Studenten zurücksetzen "Name  (KaffeekontingentAnz)""
                 setLcdFirstRowStudentInfo();
                 firstRowDefault = lcdStudentInfoRow;
@@ -427,25 +389,19 @@ function get_coffee(){
                 console.log("Now you can get moooooore Coffee");
 
                 //Wenn noch Kaffee da ist der Student noch Kontingent hat soll der Button leuchten
-                if(student.quota>0 && coffeeMachine.availableCoffees>0){button_led.writeSync(1);}
-
+                if (student.quota > 0 && coffeeMachine.availableCoffees > 0) {
+                    button_led.writeSync(1);
+                }
             }, 3000);
-
         }, 1500);
-    } // END Else ::::: Student ist eingeloggt und hat noch Kaffeekontingent
+    }
 }
 
 function updateCoffeeLogForStudent(campusCardId) {
     console.log('updating quota');
-
     request({
-            auth: {
-                user: systemUser.name,
-                pass: systemUser.password
-            },
             method: 'POST',
-            url: 'http://192.168.0.103:8080/api/students/' + campusCardId + '/coffee-log',
-            jar: true,
+            url: '/students/' + campusCardId + '/coffee-log',
             headers: {
                 'x-xsrf-token': xxsrfToken
             }
