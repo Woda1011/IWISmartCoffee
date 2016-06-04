@@ -8,7 +8,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,10 +48,10 @@ public class StudentController {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StudentResource> all(String hskaId, Pageable pageable) {
         if (hskaId == null) {
-            return this.studentRepository.findByCampusCardIdIsNullAndIsDeletedFalse(pageable).map(StudentResource::new);
+            return this.studentRepository.findByIsDeletedFalse(pageable).map(StudentResource::new);
         }
 
-        return this.studentRepository.findByHskaIdAndCampusCardIdIsNullAndIsDeletedFalse(hskaId, pageable).map
+        return this.studentRepository.findByHskaIdAndIsDeletedFalse(hskaId, pageable).map
                 (StudentResource::new);
     }
 
@@ -108,8 +107,10 @@ public class StudentController {
             throw new StudentNotFoundException("Could not find student with hskaId " + hskaId);
         }
 
-        student.setCampusCardId(studentResource.getCampusCardId());
+        student.setFirstName(studentResource.getFirstName());
         student.setLastName(studentResource.getLastName());
+        student.setHskaId(studentResource.getHskaId());
+        student.setCampusCardId(studentResource.getCampusCardId());
         student.setUpdatedAt(new Date());
 
         Student savedStudent = studentRepository.save(student);

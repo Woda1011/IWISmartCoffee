@@ -37,7 +37,15 @@ export class HttpService {
     return this.authHttp.get("/api/students", params).map(res => res.content);
   }
 
+  getStudentByHskaId(hskaId: string) {
+    return this.authHttp.get("/api/students/" + hskaId);
+  }
+
   addStudent(student: Student) {
     return this.authHttp.post("/api/students", student);
+  }
+
+  updateStudent(student: Student) {
+    return this.authHttp.put("/api/students/" + student.hskaId, student);
   }
 }

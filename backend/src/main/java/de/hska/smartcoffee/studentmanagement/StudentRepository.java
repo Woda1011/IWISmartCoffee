@@ -12,7 +12,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     Student findByCampusCardId(String campusCardId);
 
-    Page<Student> findByCampusCardIdIsNullAndIsDeletedFalse(Pageable pageable);
+    Page<Student> findByIsDeletedFalse(Pageable pageable);
 
-    Page<Student> findByHskaIdAndCampusCardIdIsNullAndIsDeletedFalse(String hskaId, Pageable pageable);
+    Page<Student> findByHskaIdAndIsDeletedFalse(String hskaId, Pageable pageable);
 }

@@ -25,9 +25,7 @@ export class AuthHttp {
     let headers = new Headers();
     this.createAuthorizationHeaders(headers);
     return this.http.get(url, {headers: headers, search: params})
-      .do(res => {
-        this.checkIfXsrfTokenIsValid(res);
-      })
+      .do(res => this.checkIfXsrfTokenIsValid(res))
       .map(res => res.json());
   }
 
@@ -37,9 +35,17 @@ export class AuthHttp {
     this.createAuthorizationHeaders(headers);
     this.createXSRFHeaders(headers);
     return this.http.post(url, JSON.stringify(data), {headers: headers})
-      .do(res => {
-        this.checkIfXsrfTokenIsValid(res);
-      })
+      .do(res => this.checkIfXsrfTokenIsValid(res))
+      .map(res => res.json());
+  }
+
+  put(url, data) {
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    this.createAuthorizationHeaders(headers);
+    this.createXSRFHeaders(headers);
+    return this.http.put(url, JSON.stringify(data), {headers: headers})
+      .do(res => this.checkIfXsrfTokenIsValid(res))
       .map(res => res.json());
   }
 

@@ -1,0 +1,29 @@
+<ion-navbar *navbar>
+  <button menuToggle>
+    <ion-icon name="menu"></ion-icon>
+  </button>
+
+  <ion-title>{{hskaId.value}} aktualisieren</ion-title>
+</ion-navbar>
+
+<ion-content padding>
+  <form [ngFormModel]="campusCardForm" (ngSubmit)="updateStudent(campusCardForm.value)">
+    <ion-item>
+      <ion-label floating>Vorname</ion-label>
+      <ion-input type="text" [ngFormControl]="firstName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>Nachname</ion-label>
+      <ion-input type="text" [ngFormControl]="lastName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>IZ-Kürzel</ion-label>
+      <ion-input type="text" [ngFormControl]="hskaId"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>Campus-Card-ID</ion-label>
+      <ion-input type="text" [ngFormControl]="campusCardId" disabled></ion-input>
+    </ion-item>
+    <button block light type="submit" [disabled]="!campusCardForm.valid">Aktualisieren</button>
+  </form>
+</ion-content>
