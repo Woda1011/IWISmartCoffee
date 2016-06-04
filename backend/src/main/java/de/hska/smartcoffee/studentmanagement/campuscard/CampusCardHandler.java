@@ -14,6 +14,7 @@ import java.util.Set;
 public class CampusCardHandler extends TextWebSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CampusCardHandler.class);
+    private static CampusCard campusCard;
 
     /**
      * All open WebSocket sessions
@@ -23,18 +24,33 @@ public class CampusCardHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         peers.add(session);
+        if (campusCard != null) {
+            send(session, campusCard);
+        }
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession webSocketSession, TextMessage textMessage) {
-        CampusCard campusCard = new CampusCard(textMessage.getPayload());
-        peers.forEach(session -> send(session, campusCard));
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus status) {
-        peers.remove(webSocketSession);
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        peers.remove(session);
         LOGGER.debug("Closing connection with status: " + status.getReason());
+    }
+
+    public void setCampusCard(String campusCardId) {
+        if (campusCard == null) {
+            campusCard = new CampusCard(campusCardId);
+        } else {
+            campusCard.setId(campusCardId);
+        }
+        sendToAll();
+    }
+
+    public void removeCampusCard() {
+        campusCard.setId("");
+        sendToAll();
+    }
+
+    private void sendToAll() {
+        peers.forEach(session -> send(session, campusCard));
     }
 
     private void send(WebSocketSession session, CampusCard campusCard) {

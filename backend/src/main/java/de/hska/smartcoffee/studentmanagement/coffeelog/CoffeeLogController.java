@@ -3,6 +3,7 @@ package de.hska.smartcoffee.studentmanagement.coffeelog;
 import de.hska.smartcoffee.studentmanagement.Student;
 import de.hska.smartcoffee.studentmanagement.StudentNotFoundException;
 import de.hska.smartcoffee.studentmanagement.StudentRepository;
+import de.hska.smartcoffee.studentmanagement.campuscard.CampusCardHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,9 @@ public class CoffeeLogController {
 
     @Autowired
     private CoffeeLogService coffeeLogService;
+
+    @Autowired
+    private CampusCardHandler cardHandler;
 
     @RequestMapping(method = RequestMethod.GET)
     @PreAuthorize("isAuthenticated()")
@@ -49,6 +53,7 @@ public class CoffeeLogController {
         Student student = studentRepository.findByHskaId(id);
 
         if (student == null) {
+            cardHandler.setCampusCard(id);
             student = studentRepository.findByCampusCardId(id);
             if (student == null) {
                 throw new StudentNotFoundException("Could not find student with id " + id);
