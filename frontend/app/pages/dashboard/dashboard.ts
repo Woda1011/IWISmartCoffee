@@ -1,4 +1,4 @@
-import {Page, Alert, IonicApp} from 'ionic-angular';
+import {Page, Alert, IonicApp, NavController} from 'ionic-angular';
 import {AuthService} from "../../base/auth";
 import {Student, Telemetry, CoffeeLog} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
@@ -22,7 +22,7 @@ export class Dashboard {
   coinKey: AbstractControl;
 
   constructor(private app: IonicApp, private AuthService: AuthService, private httpService: HttpService,
-              private FormBuilder: FormBuilder) {
+              private FormBuilder: FormBuilder, private nav: NavController) {
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.user = AuthService.getUser();
     this.showCoffeCouponInsertField = false;
@@ -63,15 +63,20 @@ export class Dashboard {
             subTitle: 'Die Kaffeemarke wurde deinem Konto gutgeschrieben.',
             buttons: ['OK']
           });
-
-          let nav = this.app.getComponent('nav');
-          nav.present(alert);
+          this.nav.present(alert);
 
           this.initCoffeeCoinForm();
           this.getCoffeeLog();
           this.showCoffeCouponInsertField = false;
         },
-        (err) => console.log(err)
+        (err) => {
+          let alert = Alert.create({
+            title: 'Fehler',
+            subTitle: 'Servernachricht: ' + err.json().message,
+            buttons: ['OK']
+          });
+          this.nav.present(alert);
+        }
       );
   }
 

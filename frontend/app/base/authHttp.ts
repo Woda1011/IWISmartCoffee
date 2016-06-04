@@ -36,7 +36,13 @@ export class AuthHttp {
     this.createXSRFHeaders(headers);
     return this.http.post(url, JSON.stringify(data), {headers: headers})
       .do(res => this.checkIfXsrfTokenIsValid(res))
-      .map(res => res.json());
+      .map(res => {
+        try {
+          return res.json();
+        } catch (e) {
+          return;
+        }
+      });
   }
 
   put(url, data) {
