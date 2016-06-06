@@ -33,6 +33,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/campuscard").permitAll()
                 .antMatchers("/api/telemetry/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/students").permitAll()
                 .antMatchers("/api/**").authenticated()
                 .and()
                 .logout().logoutUrl("/api/logout").logoutSuccessHandler(logoutSuccessHandler())

@@ -7,20 +7,23 @@
 </ion-navbar>
 
 <ion-content>
-  <form #loginCreds="ngForm" (ngSubmit)="login(loginCreds.value)">
+  <form [ngFormModel]="loginForm" (ngSubmit)="login(loginForm.value)">
     <ion-item>
       <ion-label floating>Username</ion-label>
-      <ion-input type="text" ngControl="username"></ion-input>
+      <ion-input type="text" [ngFormControl]="username"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label floating>Password</ion-label>
-      <ion-input type="password" ngControl="password"></ion-input>
+      <ion-input type="password" [ngFormControl]="password"></ion-input>
     </ion-item>
 
-    <div padding>
-      <button block type="submit">Login</button>
+    <div padding style="float: right;">
+      Noch nicht registriert? <a (click)="register()">Registrieren</a>
     </div>
 
+    <div padding>
+      <button block type="submit" [disabled]="!loginForm.valid">Login</button>
+    </div>
   </form>
 </ion-content>

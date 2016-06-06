@@ -14,7 +14,9 @@ export class AuthHttp {
 
   private createAuthorizationHeaders(headers: Headers) {
     let token = this.store.get('token')._result;
-    headers.append('Authorization', 'Basic ' + token);
+    if (token) {
+      headers.append('Authorization', 'Basic ' + token);
+    }
   }
 
   private createXSRFHeaders(headers: Headers) {

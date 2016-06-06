@@ -28,7 +28,8 @@ export class AuthService {
           firstName: user.firstName,
           lastName: user.lastName,
           hskaId: user.hskaId,
-          roles: user.roles
+          roles: user.roles,
+          hasCampusCardMapped: user.campusCardId ? true : false
         });
         this.store.set('token', base64encodedCredentials);
         return user;

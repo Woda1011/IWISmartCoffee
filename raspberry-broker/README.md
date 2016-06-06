@@ -44,3 +44,10 @@ Das Modul ist bereits in der ``package.json`` enthalten und wird somit automatis
 
 ### Installation von wiringPI
 https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup
+
+
+### Script für Autostart einrichten ###
+
+sudo nano /etc/rc.local
+* Folgende Zeile vor 'exit 0' einfügen:
+node /home/pi/Development/IWISmartCoffee/raspberry-broker/server.js
