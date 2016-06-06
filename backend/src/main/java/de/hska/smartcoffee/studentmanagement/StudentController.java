@@ -67,7 +67,6 @@ public class StudentController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    @PreAuthorize("hasRole('ADMIN')")
     public StudentResource add(@RequestBody StudentResource studentResource) {
         Student foundStudent = studentRepository.findByHskaId(studentResource.getHskaId());
 
