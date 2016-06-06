@@ -1,5 +1,7 @@
 package de.hska.smartcoffee.telemetrymanagement;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -15,7 +17,10 @@ public class Telemetry {
     private Float temperature;
 
     @Column
-    private Float humidity;
+    private Long fillLevel;
+
+    @Column
+    private boolean isBrewing;
 
     @Column
     @NotNull
@@ -37,12 +42,20 @@ public class Telemetry {
         this.temperature = temperature;
     }
 
-    public Float getHumidity() {
-        return humidity;
+    public Long getFillLevel() {
+        return fillLevel;
     }
 
-    public void setHumidity(Float humidity) {
-        this.humidity = humidity;
+    public void setFillLevel(Long fillLevel) {
+        this.fillLevel = fillLevel;
+    }
+
+    public boolean getIsBrewing() {
+        return isBrewing;
+    }
+
+    public void setBrewing(boolean isBrewing) {
+        this.isBrewing = isBrewing;
     }
 
     public Date getCreatedAt() {
