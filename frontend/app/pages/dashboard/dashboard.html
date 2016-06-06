@@ -11,8 +11,12 @@
 
   <h3>Willkommen bei SmartCoffee</h3>
 
-  <ion-list>
+  <div *ngIf="user && !user.hasCampusCardMapped" class="card-not-mapped-info">
+    Deine Campus-Karte ist noch nicht gemapped. Bitte gehe in die Fachschaft und lasse deine Karte von einem Fachschaftsmitglied registrieren.
+  </div>
 
+  <ion-list style="margin-top: 16px;">
+    <ion-item-divider light>Informationen über die Kaffeemaschine:</ion-item-divider>
     <ion-item>
       <ion-icon name="thermometer" item-left></ion-icon>
       <ion-label>Kaffee Temperatur</ion-label>
@@ -34,9 +38,6 @@
   </ion-list>
 
   <ion-list *ngIf="isLoggedIn()">
-    <p>
-      Hier findest du Informationen zu deinem Kaffeestand/-verbrauch und kannst neues Kaffee-Kontingent einpflegen.
-    </p>
     <ion-item-divider light>Servus {{user.firstName}}, dein Smartcoffee Dashboard:</ion-item-divider>
 
     <ion-item>

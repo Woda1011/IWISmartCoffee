@@ -1,4 +1,4 @@
-import {Page, Alert, IonicApp, NavController} from 'ionic-angular';
+import {Page, Alert, NavController} from "ionic-angular";
 import {AuthService} from "../../base/auth";
 import {Student, Telemetry, CoffeeLog} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
@@ -21,7 +21,7 @@ export class Dashboard {
   coffeeCoinForm: ControlGroup;
   coinKey: AbstractControl;
 
-  constructor(private app: IonicApp, private AuthService: AuthService, private httpService: HttpService,
+  constructor(private AuthService: AuthService, private httpService: HttpService,
               private FormBuilder: FormBuilder, private nav: NavController) {
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
     this.user = AuthService.getUser();

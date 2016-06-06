@@ -8,6 +8,7 @@ export interface Student {
   lastName: string;
   hskaId: string;
   campusCardId?: string;
+  hasCampusCardMapped?: boolean;
   roles: string[];
 }
 
