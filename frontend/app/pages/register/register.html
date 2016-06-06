@@ -30,6 +30,9 @@
         <ion-input type="password" ngControl="passwordRepeat"></ion-input>
       </ion-item>
     </div>
+    <ion-item>
+      <div (setVerified)="setVerified($event)" googlerecaptcha [siteKey]="siteKey" [theme]='theme'></div>
+    </ion-item>
     <button block light type="submit" [disabled]="!registerForm.valid">Registrieren</button>
   </form>
 </ion-content>
