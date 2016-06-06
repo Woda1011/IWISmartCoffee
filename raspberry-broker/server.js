@@ -5,7 +5,7 @@ var http = require('https');
 var execFile = require('child_process').execFile;
 var request = require('request');
 request = request.defaults({
-    baseUrl: 'http://192.168.178.51:8080/api',
+    baseUrl: 'http://192.168.0.110:8080/api',
     auth: {
         user: 'pius1234',
         pass: 'Sm4rtC0ff332016!'
@@ -27,6 +27,13 @@ var student = {
     quota: 0,
     campusCardId: ''
 };
+
+var coffeeMachine = {};
+coffeeMachine.isStudentLoggedIn = false;
+coffeeMachine.temperature = 0;
+coffeeMachine.availableCoffees = 0;
+coffeeMachine.coffeeLevelAt = null;
+coffeeMachine.coffeeFinishTimestamp = Date.now();
 
 var xxsrfToken = '';
 
@@ -80,11 +87,14 @@ function readNfcTag() {
                             //StatusCode 200 user is mapped and exists on server
                             body = JSON.parse(body);
                             logInStudent(body.studentName, body.quota);
+                            coffeeMachine.availableCoffees = body.coffeeLevel;
+                            coffeeMachine.coffeeLevelAt = body.coffeeLevelAt;
                         }
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
                         }
+
                     });
             }
             readNfcTag();
@@ -178,12 +188,6 @@ var lcdStudentInfoRow = "";
 var lcdSecondRow = "2. Reihe";
 var firstRowDefault = "SmartCoffee";
 var lcdFirstRow = firstRowDefault;
-
-var coffeeMachine = {};
-coffeeMachine.isStudentLoggedIn = false;
-coffeeMachine.temperature = 57;
-coffeeMachine.availableCoffees = 200;
-coffeeMachine.coffeeFinishTimestamp = Date.now();
 
 //Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
 //Todo method for sutdents, if the card is not mapped on the server
