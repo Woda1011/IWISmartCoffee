@@ -1,0 +1,35 @@
+<ion-navbar *navbar>
+  <button menuToggle>
+    <ion-icon name="menu"></ion-icon>
+  </button>
+
+  <ion-title>Registrieren</ion-title>
+</ion-navbar>
+
+<ion-content padding>
+  <form [ngFormModel]="registerForm" (ngSubmit)="register(registerForm.value)">
+    <ion-item>
+      <ion-label floating>Vorname</ion-label>
+      <ion-input type="text" [ngFormControl]="firstName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>Nachname</ion-label>
+      <ion-input type="text" [ngFormControl]="lastName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>IZ-Kürzel</ion-label>
+      <ion-input type="text" [ngFormControl]="hskaId"></ion-input>
+    </ion-item>
+    <div ngControlGroup="passwordMatch">
+      <ion-item>
+        <ion-label floating>Passwort</ion-label>
+        <ion-input type="password" ngControl="password"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label floating>Passwort wiederholen</ion-label>
+        <ion-input type="password" ngControl="passwordRepeat"></ion-input>
+      </ion-item>
+    </div>
+    <button block light type="submit" [disabled]="!registerForm.valid">Registrieren</button>
+  </form>
+</ion-content>

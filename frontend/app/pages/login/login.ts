@@ -1,6 +1,7 @@
 import {Page, NavController} from "ionic-angular";
 import {AuthService} from "../../base/auth";
 import {Dashboard} from "../dashboard/dashboard";
+import {RegisterPage} from "../register/register";
 
 @Page({
   templateUrl: 'build/pages/login/login.html',
@@ -13,5 +14,9 @@ export class LoginPage {
 
   login(credentials) {
     this.AuthService.login(credentials).then(() => this.nav.setRoot(Dashboard));
+  }
+
+  register() {
+    this.nav.setRoot(RegisterPage);
   }
 }
