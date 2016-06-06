@@ -4,6 +4,8 @@ import de.hska.smartcoffee.studentmanagement.Student;
 import de.hska.smartcoffee.studentmanagement.StudentNotFoundException;
 import de.hska.smartcoffee.studentmanagement.StudentRepository;
 import de.hska.smartcoffee.studentmanagement.campuscard.CampusCardHandler;
+import de.hska.smartcoffee.telemetrymanagement.Telemetry;
+import de.hska.smartcoffee.telemetrymanagement.TelemetryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,13 +26,17 @@ public class CoffeeLogController {
     @Autowired
     private CampusCardHandler cardHandler;
 
+    @Autowired
+    private TelemetryRepository telemetryRepository;
+
     @RequestMapping(method = RequestMethod.GET)
     @PreAuthorize("isAuthenticated()")
     public CoffeeLogResource getCoffeeLog(@PathVariable String id) {
         Student student = getStudent(id);
+        Telemetry telemetry = telemetryRepository.findLatestTelemetry();
 
         // TODO Calculate averageConsumption
-        return new CoffeeLogResource(coffeeLogService.getQuota(student), null, student.getFirstName());
+        return new CoffeeLogResource(coffeeLogService.getQuota(student), null, student.getFirstName(), telemetry.getHumidity(), telemetry.getCreatedAt());
     }
 
     @RequestMapping(method = RequestMethod.POST)
