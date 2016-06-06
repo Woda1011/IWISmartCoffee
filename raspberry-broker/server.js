@@ -5,10 +5,10 @@ var http = require('https');
 var execFile = require('child_process').execFile;
 var request = require('request');
 request = request.defaults({
-    baseUrl: 'http://192.168.0.103:8080/api',
+    baseUrl: 'http://192.168.178.51:8080/api',
     auth: {
         user: 'pius1234',
-        pass: 'Sm4rtC0ff332016'
+        pass: 'Sm4rtC0ff332016!'
     },
     jar:true
 });
@@ -93,8 +93,7 @@ function readNfcTag() {
                 console.log('no Tag');
                 student.campusCardId = '';
                 logOutStudent();
-                //TODO waiting for new Server API
-                request.get('/students/' + student.campusCardId + '/coffee-log');
+                request.get('campuscard');
             }
             readNfcTag();
         }
