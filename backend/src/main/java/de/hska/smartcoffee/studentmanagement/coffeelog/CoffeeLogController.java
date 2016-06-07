@@ -36,7 +36,8 @@ public class CoffeeLogController {
         Telemetry telemetry = telemetryRepository.findLatestTelemetry();
 
         // TODO Calculate averageConsumption
-        return new CoffeeLogResource(coffeeLogService.getQuota(student), null, student.getFirstName(), telemetry.getHumidity(), telemetry.getCreatedAt());
+        // TODO what if no telemetry is available?
+        return new CoffeeLogResource(coffeeLogService.getQuota(student), null, student.getFirstName(), telemetry.getFillLevel(), telemetry.getCreatedAt(), telemetry.getIsBrewing());
     }
 
     @RequestMapping(method = RequestMethod.POST)
