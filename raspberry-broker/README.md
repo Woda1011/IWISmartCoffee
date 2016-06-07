@@ -4,6 +4,20 @@ Der PI empfängt die Sensordaten des Arduino und sendet diese an das Backend!
 * Im Root ``npm install``
 * Zum Starten ``npm start``
 
+## Sicherheit erhöhen
+### Neuen User anlegen
+Der Standarduser und das Standardpasswort sollten unbedingt geändert werden.
+* Benutzer hinzufügen ``sudo useradd -m smartcoffee -G sudo``
+* Passwort setzen ``sudo passwd smartcoffeepassword``
+Mit diesen Befehlen wird ein neuer User mit den gleichen Berechtigungen wie der
+Standarduser angelegt.
+### Standarduser löschen
+Mit dem neu angelegten User einloggen und folgende Befehle ausführen:
+* ``sudo visudo`` Fürs sichere Entfernen des alten Users
+* ``sudo deluser pi`` Alten PI-User löschen
+* ``sudo deluser -remove-home pi`` Altes Homeverzeichnis von PI löschen
+
+
 
 ## Useful Linux Commands
 * PI ordentlich runterfahren ``sudo shutdown -h 0``
