@@ -147,7 +147,7 @@ function openSerialPort(portName) {
                 var telemetryData = {
                     temperature: jsonData.temperature,
                     humidity: jsonData.humidity,
-                    createdAt: new Date().getTime()
+                    createdAt: Date.now()
 
                 };
                 postTelemetryData(JSON.stringify(telemetryData));
@@ -160,32 +160,24 @@ function openSerialPort(portName) {
     });
 }
 
-function postTelemetryData(sensorData) {
+function postTelemetryData(telemetryData) {
 
-    var options = {
-        host: '127.0.0.1',
-        port: '8080',
-        //host: 'www.smartcoffee.event-news.org',
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'}
-    };
-
-    options.path = '/api/telemetry';
-
-    var request = http.request(options, function (response) {
-        console.log('STATUS: ' + response.statusCode);
-        response.on('data', function (data) {
-            console.log('BODY: ' + data);
+    request.post({
+            url: '/telemetry',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8'
+            },
+            body: telemetryData
+        },
+        function (error, response, body) {
+            if (response.statusCode == 200) {
+                console.log('Telemtry updated');
+            }
+            //TODO errorhandling for server request
+            if (error) {
+                console.log(error);
+            }
         });
-
-        response.on('error', function (error) {
-            //TODO errorhandling for connection timeout
-            console.error(error)
-        });
-    });
-
-    request.write(sensorData);
-    request.end();
 }
 
 var emptyRow = "                ";
@@ -406,7 +398,6 @@ function get_coffee(){
 }
 
 function updateCoffeeLogForStudent(campusCardId) {
-    console.log('updating quota');
     request({
             method: 'POST',
             url: '/students/' + campusCardId + '/coffee-log',
@@ -415,14 +406,14 @@ function updateCoffeeLogForStudent(campusCardId) {
             }
         },
         function (error, response, body) {
-            if (response.statusCode == 409) {
-                //StatusCode 409, error: user is not mapped
-                console.log('Student not found');
-                //TODO
-            }
-
             if (response.statusCode == 200) {
-                console.log('Quota updated');
+                var telemetryData = {
+                    temperature: coffeeMachine.temperature,
+                    fillLevel: coffeeMachine.availableCoffees,
+                    brewing: false,
+                    createdAt: Date.now()
+                };
+                postTelemetryData(JSON.stringify(telemetryData));
             }
 
             //TODO errorhandling for server request
