@@ -20,6 +20,8 @@ export class Dashboard {
 
   coffeeCoinForm: ControlGroup;
   coinKey: AbstractControl;
+  private timeLeft;
+  private intervalId;
 
   constructor(private AuthService: AuthService, private httpService: HttpService,
               private FormBuilder: FormBuilder, private nav: NavController) {
@@ -38,7 +40,32 @@ export class Dashboard {
 
   /** Required for initial load */
   private getTelemetryData() {
-    this.httpService.getTelemetry().subscribe(telemetry => this.telemetry = telemetry);
+    this.httpService.getTelemetry().subscribe(telemetry => {
+      this.telemetry = telemetry;
+      if (this.telemetry.isBrewing) {
+        let now: any = new Date();
+        let timeLeft = now - this.telemetry.createdAt;
+        if (timeLeft <= 1800000) {
+          this.timeLeft = new Date(1800000 - timeLeft);
+          this.startInterval(this.telemetry.createdAt);
+        }
+      } else {
+        clearInterval(this.intervalId);
+        this.timeLeft = undefined;
+      }
+    });
+  }
+
+  private startInterval(timeLeft) {
+    this.intervalId = setInterval(() => {
+      let newDate = <any>new Date() - timeLeft;
+      if (newDate <= 1800000) {
+        this.timeLeft = new Date(1800000 - newDate);
+      } else {
+        clearInterval(this.intervalId);
+        this.timeLeft = undefined;
+      }
+    }, 1000);
   }
 
   /** Check for new telemetry data every 30 seconds */

@@ -15,7 +15,8 @@ export interface Student {
 export interface Telemetry {
   id?: number;
   temperature?: number;
-  humidity?: number;
+  fillLevel?: number;
+  isBrewing?: boolean;
   createdAt?: any;
 }
 
