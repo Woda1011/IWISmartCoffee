@@ -21,8 +21,8 @@ export class LoginPage {
       password: ['', Validators.required]
     });
 
-    this.username = this.loginForm.controls['username'];
-    this.password = this.loginForm.controls['password'];
+    this.username = <Control>this.loginForm.controls['username'];
+    this.password = <Control>this.loginForm.controls['password'];
 
     if (navParams.get('hskaId')) {
       this.username.updateValue(navParams.get('hskaId'));
