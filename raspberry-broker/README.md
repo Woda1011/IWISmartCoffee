@@ -46,8 +46,14 @@ Das Modul ist bereits in der ``package.json`` enthalten und wird somit automatis
 https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup
 
 
-### Script für Autostart einrichten ###
+### Script für Autostart des Node-Scripts einrichten ###
+* Editor öffnen ``sudo nano /etc/rc.local``
+* Folgende Zeile vor ``exit 0`` einfügen
+``node /home/pi/Development/IWISmartCoffee/raspberry-broker/server.js``
 
-sudo nano /etc/rc.local
-* Folgende Zeile vor 'exit 0' einfügen:
-node /home/pi/Development/IWISmartCoffee/raspberry-broker/server.js
+#### Node Prozess für Entwicklungszwecke beenden
+* für Entwicklungszwecke ist es hilfreich den Prozess selbst zu starten, damit die Konsole lesbar wird. Dazu den Prozess abschießen und selbst neustarten
+
+* ``pgrep node`` PID rausfinden
+* ``sudo kill {PID}`` zum Beenden des node Prozess
+* ``sudo npm start`` Manueller start des Node-Scripts
