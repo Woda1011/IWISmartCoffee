@@ -7,18 +7,20 @@ public class CoffeeLogResource {
     private Long quota;
     private Float averageConsumption;
     private String studentName;
-    private Float coffeeLevel;
-    private Date coffeeLevelDate;
+    private Long fillLevel;
+    private Date fillLevelDate;
+    private Boolean isBrewing = false;
 
     public CoffeeLogResource() {
     }
 
-    public CoffeeLogResource(Long quota, Float averageConsumption, String studentName, Float coffeeLevel, Date coffeeLevelDate) {
+    public CoffeeLogResource(Long quota, Float averageConsumption, String studentName, Long fillLevel, Date fillLevelDate, Boolean isBrewing) {
         this.quota = quota;
         this.averageConsumption = averageConsumption;
         this.studentName = studentName;
-        this.coffeeLevel = coffeeLevel;
-        this.coffeeLevelDate = coffeeLevelDate;
+        this.fillLevel = fillLevel;
+        this.fillLevelDate = fillLevelDate;
+        this.isBrewing = isBrewing;
     }
 
     public CoffeeLogResource(Long quota, Float averageConsumption) {
@@ -50,19 +52,27 @@ public class CoffeeLogResource {
         this.studentName = studentName;
     }
 
-    public Float getCoffeeLevel() {
-        return coffeeLevel;
+    public Date getFillLevelDate() {
+        return fillLevelDate;
     }
 
-    public void setCoffeeLevel(Float coffeeLevel) {
-        this.coffeeLevel = coffeeLevel;
+    public void setFillLevelDate(Date fillLevelDate) {
+        this.fillLevelDate = fillLevelDate;
     }
 
-    public Date getCoffeeLevelDate() {
-        return coffeeLevelDate;
+    public Long getFillLevel() {
+        return fillLevel;
     }
 
-    public void setCoffeeLevelDate(Date coffeeLevelDate) {
-        this.coffeeLevelDate = coffeeLevelDate;
+    public void setFillLevel(Long fillLevel) {
+        this.fillLevel = fillLevel;
+    }
+
+    public Boolean getBrewing() {
+        return isBrewing;
+    }
+
+    public void setBrewing(Boolean brewing) {
+        isBrewing = brewing;
     }
 }
