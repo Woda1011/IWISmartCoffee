@@ -76,7 +76,6 @@ function readNfcTag() {
                     },
                     function (error, response, body) {
                         xxsrfToken = response.headers['x-xsrf-token'];
-                        console.log(body);
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
@@ -87,14 +86,20 @@ function readNfcTag() {
                             //StatusCode 200 user is mapped and exists on server
                             body = JSON.parse(body);
                             logInStudent(body.studentName, body.quota);
-                            coffeeMachine.availableCoffees = body.coffeeLevel;
-                            coffeeMachine.coffeeLevelAt = body.coffeeLevelAt;
+                            coffeeMachine.availableCoffees = body.fillLevel;
+                            coffeeMachine.coffeeLevelAt = body.fillLevelDate;
+                            if(body.brewing) {
+                                //Add 30 Minutes to coffeeFinishTimestamp = 1800000 ms
+                                coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate + 1800000);
+                                //TODO Show Timer on Display
+                            } else {
+                                coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
+                            }
                         }
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
                         }
-
                     });
             }
             readNfcTag();
