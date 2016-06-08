@@ -33,12 +33,9 @@ coffeeMachine.isStudentLoggedIn = false;
 coffeeMachine.temperature = 0;
 coffeeMachine.availableCoffees = 0;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
+coffeeMachine.isBrewing = false;
 
 var xxsrfToken = '';
-
-app.listen(3000, function () {
-    console.log('Raspberry-Broker listening on port 3000!');
-});
 
 readNfcTag();
 
@@ -86,13 +83,13 @@ function readNfcTag() {
                             body = JSON.parse(body);
                             logInStudent(body.studentName, body.quota);
                             coffeeMachine.availableCoffees = body.fillLevel;
+                            coffeeMachine.isBrewing = body.brewing;
                             if(body.brewing) {
                                 //Add 30 Minutes to coffeeFinishTimestamp = 1800000 ms
                                 //Admin setup new Coffee, coffee output should be delayed!
                                 //show timer on lcd with time left time left = coffeeFinishTimestamp - Date.now()
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate + 1800000);
                                 //TODO Show Timer on Display with remeaning time until the coffee is finished
-                                //TODO Disable coffee output button
                             } else {
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
                                 //TODO show normal coffee state on display
@@ -320,6 +317,8 @@ function get_coffee(){
     //Es wird gerade Kaffee rausgelassen
     if (coffee_output_in_use == true) {
         console.log("Bitte Warten - Kaffee wird bereits ausgegeben!");
+    } else if (coffeeMachine.isBrewing) {
+        //TODO show message on screen "Kaffee ist noch nicht fertig"
     }
     //Kaffeemaschine ist leer
     else if (coffeeMachine.availableCoffees <= 0) {
