@@ -32,7 +32,6 @@ var coffeeMachine = {};
 coffeeMachine.isStudentLoggedIn = false;
 coffeeMachine.temperature = 0;
 coffeeMachine.availableCoffees = 0;
-coffeeMachine.coffeeLevelAt = null;
 coffeeMachine.coffeeFinishTimestamp = Date.now();
 
 var xxsrfToken = '';
@@ -87,13 +86,16 @@ function readNfcTag() {
                             body = JSON.parse(body);
                             logInStudent(body.studentName, body.quota);
                             coffeeMachine.availableCoffees = body.fillLevel;
-                            coffeeMachine.coffeeLevelAt = body.fillLevelDate;
                             if(body.brewing) {
                                 //Add 30 Minutes to coffeeFinishTimestamp = 1800000 ms
+                                //Admin setup new Coffee, coffee output should be delayed!
+                                //show timer on lcd with time left time left = coffeeFinishTimestamp - Date.now()
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate + 1800000);
-                                //TODO Show Timer on Display
+                                //TODO Show Timer on Display with remeaning time until the coffee is finished
+                                //TODO Disable coffee output button
                             } else {
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
+                                //TODO show normal coffee state on display
                             }
                         }
                         //TODO errorhandling for server request
@@ -186,11 +188,6 @@ var lcdSecondRow = "2. Reihe";
 var firstRowDefault = "SmartCoffee";
 var lcdFirstRow = firstRowDefault;
 
-//Todo method for student greetings, this occurs when a student places his card on the reader First Row "Hi {name} Second Row "Guthaben: {quota}"
-//Todo method for sutdents, if the card is not mapped on the server
-//Todo default message if no student is logged in
-
-//Todo export method method to set First Row
 function setLcdFirstRowStudentInfo() {
     lcdStudentInfoRow = "Hi " + student.name + emptyRow;
     ausgabetext = lcdFirstRow;
@@ -206,12 +203,11 @@ function setLcdFirstRowStudentInfo() {
     }
 }
 
-//Todo export
 function setLcdSecondRow() {
     if (coffeeMachine.availableCoffees > 0) {
         lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.availableCoffees + "Kaffee" + "        ";
     } else {
-        lcdSecondRow = "Mach mehr Kaffee! ";
+        lcdSecondRow = "Kaffee ist leer!";
     }
 }
 
@@ -219,7 +215,7 @@ lcd.on('ready', function () {
     setInterval(function () {
         setLcdSecondRow();
         lcd.setCursor(0, 0);
-        ausgabetext = lcdFirstRow + emptyRow;
+        var ausgabetext = lcdFirstRow + emptyRow;
         lcd.print(ausgabetext.substring(0, 16));
         lcd.once('printed', function () {
             lcd.setCursor(0, 1); // col 0, row 1
@@ -259,14 +255,6 @@ function logOutStudent() {
         lcdFirstRow = firstRowDefault;
     }, 1500);
 }
-
-/*
- lcd.on('ready', function() {
- lcd.setCursor(16, 0);
- lcd.autoscroll();
- print('SmartCoffee@HsKa - 7Kaffee verfuegbar - Temperatur 65C ');
- });
- */
 
 function print(str, pos) {
     pos = pos || 0;
