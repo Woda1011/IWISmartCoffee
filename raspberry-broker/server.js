@@ -75,7 +75,11 @@ function readNfcTag() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //TODO update Message on Screen "Deine Karte ist noch nicht zugeordnet..."
+                            //Message on Screen, that the card isn't mapped
+                            lcdFirstRow = "Nicht gemapped";
+                            setTimeout(function () {
+                                lcdFirstRow = firstRowDefault;
+                            }, 2000);
                         }
 
                         if (response.statusCode == 200) {
@@ -84,6 +88,14 @@ function readNfcTag() {
                             logInStudent(body.studentName, body.quota);
                             coffeeMachine.availableCoffees = body.fillLevel;
                             coffeeMachine.isBrewing = body.brewing;
+
+
+
+                            /*
+                                ToDo:   the following lines should be moevid in the LCD-1-Scond-Intervall.
+                                        Because, if its brewing and you put your card to the Reader, just nothing happens ..
+                                        What you describe here is just for the LCD-1-Second-Intervall  ...
+                            */
                             if(body.brewing) {
                                 //Add 30 Minutes to coffeeFinishTimestamp = 1800000 ms
                                 //Admin setup new Coffee, coffee output should be delayed!
@@ -94,10 +106,22 @@ function readNfcTag() {
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
                                 //TODO show normal coffee state on display
                             }
+
+
+                            
                         }
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
+
+                            // ToDo: If you want to show the beginning (only 16chars) of the message on the screen:
+                            /*
+                            lcdFirstRow = error.substring(0, 16);
+                            setTimeout(function () {
+                                lcdFirstRow = firstRowDefault;
+                            }, 3000);
+                            */
+
                         }
                     });
             }
@@ -199,6 +223,8 @@ function setLcdFirstRowStudentInfo() {
         }
     }
 }
+
+
 
 function setLcdSecondRow() {
     if (coffeeMachine.availableCoffees > 0) {
