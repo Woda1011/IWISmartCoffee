@@ -247,14 +247,10 @@ lcd.on('ready', function () {
             lcd.setCursor(0, 1); // col 0, row 1
             lcd.print(lcdSecondRow.substring(0, 16)); // print date
 
-            if(coffeeMachine.isBrewing) {
+            if(coffeeMachine.isBrewing && ((coffeeMachine.coffeeFinishTimestamp-Date.now()) > 0)) {
                 var timeRemaining = Math.floor((coffeeMachine.coffeeFinishTimestamp-Date.now())/1000);
                 var minutes = Math.floor(timeRemaining/60);
                 var seconds = timeRemaining % 60;
-
-                if(timeRemaining <= 0 ) {
-                    coffeeMachine.isBrewing = false;
-                }
 
                 if(minutes < 10) {
                     minutes = '0' + minutes;
