@@ -37,7 +37,22 @@ coffeeMachine.isBrewing = false;
 
 var xxsrfToken = '';
 
+getInitialTelemetryData();
+
 readNfcTag();
+
+function getInitialTelemetryData() {
+    request.get({
+        url: 'telemetry'
+    }, function(error, response, body) {
+        if(response.statusCode == 200) {
+            body = JSON.parse(body);
+            coffeeMachine.availableCoffees = body.fillLevel;
+            coffeeMachine.temperature = body.temperature;
+
+        }
+    });
+}
 
 function extractCampusCardId(stdout, searchString) {
     var tempString = stdout.slice(stdout.indexOf(searchString));
