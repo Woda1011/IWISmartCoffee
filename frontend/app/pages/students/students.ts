@@ -11,7 +11,7 @@ import {StudentDetails} from "./details/details";
 export class Students {
 
   private students: Student[];
-  private searchQuery: string;
+  private searchQuery;
 
   constructor(private nav: NavController, private HttpService: HttpService) {
     this.searchQuery = '';
@@ -27,7 +27,7 @@ export class Students {
   }
 
   private loadStudents(searchbar?) {
-    this.HttpService.getStudents(searchbar ? searchbar.value : undefined).then(
+    this.HttpService.getStudents(searchbar ? searchbar.value : undefined).subscribe(
       (students: Student[]) => this.students = students
     )
   }

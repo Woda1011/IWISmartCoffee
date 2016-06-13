@@ -6,12 +6,17 @@
 </ion-navbar>
 
 <ion-content>
-  <ion-list *ngIf="user">
+  <ion-list>
     <ion-list-header>
       Profileinstellungen <b>{{user.hskaId}}</b>
     </ion-list-header>
-    <ion-item *ngFor="let a_role of user.roles">
+    <ion-item *ngFor="#a_role of user.roles">
       <ion-icon name="leaf" item-left></ion-icon> {{a_role}}
+    </ion-item>
+
+    <ion-item>
+      <ion-label fixed>Benutzername</ion-label>
+      <ion-input type="text" value="{{user.firstName}}s_Nicname"></ion-input>
     </ion-item>
 
     <ion-item>
@@ -35,15 +40,15 @@
 
 
     <ion-item>
-      <ion-input type="password" placeholder="Neues Passwort" disabled></ion-input>
+      <ion-input type="password" placeholder="Neues Passwort"></ion-input>
     </ion-item>
 
 
     <ion-item>
-      <ion-input type="password" placeholder="Neues Passwort Wdh." disabled></ion-input>
+      <ion-input type="password" placeholder="Neues Passwort Wdh."></ion-input>
     </ion-item>
 
-    <button block light disabled>Neues Passwort setzen</button>
+    <button block light>Neues Passwort setzen</button>
 
   </ion-list>
 

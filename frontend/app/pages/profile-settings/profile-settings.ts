@@ -10,7 +10,7 @@ export class ProfileSettingsPage {
 
   user: Student;
 
-  constructor(private AuthService: AuthService) {
-    AuthService.getUser().then((user) => this.user = user);
+  constructor(private authService: AuthService) {
+    this.user = authService.getUser();
   }
 }

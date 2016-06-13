@@ -1,7 +1,7 @@
+import {Injectable} from "angular2/core";
+import {Http, Headers} from "angular2/http";
 import {Storage, LocalStorage} from "ionic-angular";
 import {CookieService} from "angular2-cookie/core";
-import {Injectable} from "@angular/core";
-import {Http, Headers} from "@angular/http";
 
 @Injectable()
 export class AuthHttp {
@@ -12,46 +12,49 @@ export class AuthHttp {
     this.store = new Storage(LocalStorage);
   }
 
-  private getAuthorizationHeaders() {
-    return this.store.get('token');
+  private createAuthorizationHeaders(headers: Headers) {
+    let token = this.store.get('token')._result;
+    if (token) {
+      headers.append('Authorization', 'Basic ' + token);
+    }
   }
 
   private createXSRFHeaders(headers: Headers) {
     headers.append('X-XSRF-TOKEN', this.CookieService.get('XSRF-TOKEN'));
   }
 
-  get(url, params?): any {
+  get(url, params?) {
     let headers = new Headers();
-    return this.getAuthorizationHeaders().then((token) => {
-      headers.append('Authorization', token);
-      return this.http.get(url, {headers: headers, search: params})
-          .toPromise()
-          .then(res => this.checkIfXsrfTokenIsValid(res));
-    });
+    this.createAuthorizationHeaders(headers);
+    return this.http.get(url, {headers: headers, search: params})
+      .do(res => this.checkIfXsrfTokenIsValid(res))
+      .map(res => res.json());
   }
 
-  post(url, data): any {
+  post(url, data) {
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    return this.getAuthorizationHeaders().then((token) => {
-      headers.append('Authorization', token);
-      this.createXSRFHeaders(headers);
-      return this.http.post(url, JSON.stringify(data), {headers: headers})
-          .toPromise()
-          .then(res => this.checkIfXsrfTokenIsValid(res));
-    });
+    this.createAuthorizationHeaders(headers);
+    this.createXSRFHeaders(headers);
+    return this.http.post(url, JSON.stringify(data), {headers: headers})
+      .do(res => this.checkIfXsrfTokenIsValid(res))
+      .map(res => {
+        try {
+          return res.json();
+        } catch (e) {
+          return;
+        }
+      });
   }
 
-  put(url, data): any {
+  put(url, data) {
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    return this.getAuthorizationHeaders().then((token) => {
-      headers.append('Authorization', token);
-      this.createXSRFHeaders(headers);
-      return this.http.put(url, JSON.stringify(data), {headers: headers})
-          .toPromise()
-          .then(res => this.checkIfXsrfTokenIsValid(res));
-    });
+    this.createAuthorizationHeaders(headers);
+    this.createXSRFHeaders(headers);
+    return this.http.put(url, JSON.stringify(data), {headers: headers})
+      .do(res => this.checkIfXsrfTokenIsValid(res))
+      .map(res => res.json());
   }
 
   private checkIfXsrfTokenIsValid(res) {
@@ -65,11 +68,6 @@ export class AuthHttp {
       this.store.remove('student');
       this.store.remove('token');
       this.CookieService.remove('XSRF-TOKEN');
-    }
-    try {
-      return res.json();
-    } catch (e) {
-      return res;
     }
   }
 }

@@ -1,5 +1,5 @@
 import {Page} from 'ionic-angular';
-import {ControlGroup, AbstractControl, FormBuilder, Validators} from "@angular/common";
+import {AbstractControl, ControlGroup, FormBuilder, Validators} from "angular2/common";
 
 @Page({
   templateUrl: 'build/pages/coffee-coin/coffee-coin.html'

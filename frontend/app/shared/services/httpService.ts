@@ -1,9 +1,9 @@
+import {Injectable} from "angular2/core";
 import "rxjs/Rx";
 import {Telemetry, Student} from "../../_typings";
 import {Observable} from "rxjs/Observable";
 import {AuthHttp} from "../../base/authHttp";
-import {Http, URLSearchParams} from "@angular/http";
-import {Injectable} from "@angular/core";
+import {Http, URLSearchParams} from "angular2/http";
 
 @Injectable()
 export class HttpService {
@@ -13,12 +13,12 @@ export class HttpService {
 
   getTelemetry() {
     return this.http.get("/api/telemetry")
-        .map(res => <Telemetry> res.json())
-        .map(telemetry => {
-          telemetry.createdAt = new Date(telemetry.createdAt);
-          return telemetry;
-        })
-        .catch(error => Observable.throw(error.json()));
+      .map(res => <Telemetry> res.json())
+      .map(telemetry => {
+        telemetry.createdAt = new Date(telemetry.createdAt);
+        return telemetry;
+      })
+      .catch(error => Observable.throw(error.json()));
   }
 
   addStudentCoffeeCoinMapping(coinKey: string) {
@@ -34,7 +34,7 @@ export class HttpService {
     if (hskaId && hskaId !== '') {
       params.set('hskaId', hskaId);
     }
-    return this.authHttp.get("/api/students", params).then(res => res.content);
+    return this.authHttp.get("/api/students", params).map(res => res.content);
   }
 
   getStudentByHskaId(hskaId: string) {

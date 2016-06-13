@@ -1,8 +1,8 @@
-import {Page, NavController, Alert} from "ionic-angular/index";
+import {Page, NavController} from "ionic-angular/index";
+import {ControlGroup, AbstractControl, Validators, FormBuilder, Control} from "angular2/common";
 import {HttpService} from "../../shared/services/httpService";
 import {LoginPage} from "../login/login";
-import {ControlGroup, AbstractControl, Control, FormBuilder, Validators} from "@angular/common";
-import {GoogleRecaptchaDirective} from "../../shared/googlerecaptcha.directive";
+import {GoogleRecaptchaDirective} from "../../../node_modules/angular2-google-recaptcha/directives/googlerecaptcha.directive";
 
 @Page({
   templateUrl: 'build/pages/register/register.html',
@@ -71,21 +71,9 @@ export class RegisterPage {
 
   register(formData) {
     formData.password = formData.passwordMatch.password;
-    this.HttpService.addStudent(formData).then(
-        (student) => {
-          let alert = Alert.create({
-            title: 'Erfolg',
-            message: 'Du hast dich erfolgreich registriert.',
-            buttons: [{
-              text: 'OK',
-              handler: () => {
-                this.nav.setRoot(LoginPage, {hskaId: student.hskaId});
-              }
-            }]
-          });
-          this.nav.present(alert);
-        },
-        (err) => console.log(err)
+    this.HttpService.addStudent(formData).subscribe(
+      (student) => this.nav.setRoot(LoginPage, {hskaId: student.hskaId}),
+      (err) => console.log(err)
     )
   }
 

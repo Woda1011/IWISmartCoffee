@@ -53,7 +53,7 @@
 
   </ion-list>
 
-  <ion-list *ngIf="user">
+  <ion-list *ngIf="isLoggedIn()">
     <ion-item-divider light>Servus {{user.firstName}}, dein Smartcoffee Dashboard:</ion-item-divider>
 
     <ion-item>

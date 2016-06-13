@@ -1,9 +1,9 @@
 import {Page, NavController, NavParams} from "ionic-angular/index";
+import {FormBuilder, ControlGroup, Validators, Control} from "angular2/common";
 import {WebSocketService} from "../../../base/websocket-service";
 import {Students} from "../students";
 import {HttpService} from "../../../shared/services/httpService";
 import {Student} from "../../../_typings";
-import {ControlGroup, Control, FormBuilder, Validators} from "@angular/common";
 
 @Page({
   templateUrl: 'build/pages/students/details/details.html',
@@ -58,7 +58,7 @@ export class StudentDetails {
   }
 
   private loadStudent() {
-    this.HttpService.getStudentByHskaId(this.navParams.get('hskaId')).then(
+    this.HttpService.getStudentByHskaId(this.navParams.get('hskaId')).subscribe(
       (student: Student) => {
         this.student = student;
         this.firstName.updateValue(student.firstName);
@@ -71,7 +71,7 @@ export class StudentDetails {
 
   updateStudent(formData) {
     formData.roles = this.student.roles;
-    this.HttpService.updateStudent(formData).then(
+    this.HttpService.updateStudent(formData).subscribe(
       (student) => this.nav.setRoot(Students)
     );
   }
