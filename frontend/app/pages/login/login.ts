@@ -2,7 +2,7 @@ import {Page, NavController, NavParams} from "ionic-angular";
 import {AuthService} from "../../base/auth";
 import {Dashboard} from "../dashboard/dashboard";
 import {RegisterPage} from "../register/register";
-import {ControlGroup, Control, Validators, FormBuilder} from "angular2/common";
+import {ControlGroup, Control, FormBuilder, Validators} from "@angular/common";
 
 @Page({
   templateUrl: 'build/pages/login/login.html',

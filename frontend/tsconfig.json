@@ -6,14 +6,15 @@
     "experimentalDecorators": true
   },
   "filesGlob": [
-    "**/*.ts"
+    "**/*.ts",
+    "!node_modules/**/*"
   ],
   "exclude": [
     "node_modules",
     "typings/main",
     "typings/main.d.ts"
   ],
-  "compileOnSave": true,
+  "compileOnSave": false,
   "atom": {
     "rewriteTsconfig": false
   }

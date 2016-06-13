@@ -3,7 +3,7 @@ import {AuthService} from "../../base/auth";
 import {Student, Telemetry, CoffeeLog} from "../../_typings";
 import {HttpService} from "../../shared/services/httpService.ts";
 import {Observable} from "rxjs/Observable";
-import {ControlGroup, AbstractControl, FormBuilder, Validators} from "angular2/common";
+import {ControlGroup, AbstractControl, FormBuilder, Validators} from "@angular/common";
 
 
 @Page({
@@ -26,16 +26,19 @@ export class Dashboard {
   constructor(private AuthService: AuthService, private httpService: HttpService,
               private FormBuilder: FormBuilder, private nav: NavController) {
     this.isLoggedIn = () => this.AuthService.isAuthenticated();
-    this.user = AuthService.getUser();
     this.showCoffeCouponInsertField = false;
     this.initCoffeeCoinForm();
-
     this.getTelemetryData();
+
     this.pollTelemetryData().subscribe(telemetry => this.telemetry = telemetry);
 
-    if (this.isLoggedIn()) {
-      this.getCoffeeLog();
-    }
+    AuthService.getUser()
+        .then((user) => {
+          this.user = user;
+          if (this.user) {
+            this.getCoffeeLog();
+          }
+        });
   }
 
   /** Required for initial load */
@@ -76,35 +79,35 @@ export class Dashboard {
   }
 
   private getCoffeeLog() {
-    this.httpService.getCoffeeLog(this.user.hskaId).subscribe(
-      (coffeeLog) => this.coffeeLog = coffeeLog
+    this.httpService.getCoffeeLog(this.user.hskaId).then(
+        (coffeeLog) => this.coffeeLog = coffeeLog
     );
   }
 
   addCoffeeCoin(value) {
     this.httpService.addStudentCoffeeCoinMapping(value.coinKey)
-      .subscribe(
-        () => {
-          let alert = Alert.create({
-            title: 'Erfolg',
-            subTitle: 'Die Kaffeemarke wurde deinem Konto gutgeschrieben.',
-            buttons: ['OK']
-          });
-          this.nav.present(alert);
+        .then(
+            () => {
+              let alert = Alert.create({
+                title: 'Erfolg',
+                subTitle: 'Die Kaffeemarke wurde deinem Konto gutgeschrieben.',
+                buttons: ['OK']
+              });
+              this.nav.present(alert);
 
-          this.initCoffeeCoinForm();
-          this.getCoffeeLog();
-          this.showCoffeCouponInsertField = false;
-        },
-        (err) => {
-          let alert = Alert.create({
-            title: 'Fehler',
-            subTitle: 'Servernachricht: ' + err.json().message,
-            buttons: ['OK']
-          });
-          this.nav.present(alert);
-        }
-      );
+              this.initCoffeeCoinForm();
+              this.getCoffeeLog();
+              this.showCoffeCouponInsertField = false;
+            },
+            (err) => {
+              let alert = Alert.create({
+                title: 'Fehler',
+                subTitle: 'Servernachricht: ' + JSON.parse(err._body).message,
+                buttons: ['OK']
+              });
+              this.nav.present(alert);
+            }
+        );
   }
 
   private initCoffeeCoinForm() {

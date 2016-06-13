@@ -1,8 +1,8 @@
 import {Page, NavController} from "ionic-angular/index";
-import {FormBuilder, ControlGroup, AbstractControl, Validators, Control} from "angular2/common";
 import {WebSocketService} from "../../../base/websocket-service";
 import {Students} from "../students";
 import {HttpService} from "../../../shared/services/httpService";
+import {ControlGroup, AbstractControl, Control, FormBuilder, Validators} from "@angular/common";
 
 @Page({
   templateUrl: 'build/pages/students/add/add.html',
@@ -58,7 +58,7 @@ export class AddStudent {
   }
 
   addStudent(formData) {
-    this.HttpService.addStudent(formData).subscribe(
+    this.HttpService.addStudent(formData).then(
       (student) => this.nav.setRoot(Students),
       (err) => console.log(err)
     )
