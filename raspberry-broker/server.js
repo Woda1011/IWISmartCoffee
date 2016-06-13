@@ -49,6 +49,11 @@ function extractCampusCardId(stdout, searchString) {
     return campusCardId;
 }
 
+function resetCampusCardId() {
+    console.log('no Tag');
+    student.campusCardId = '';
+    request.get('campuscard');
+}
 function readNfcTag() {
     function hasCampusCardIdChanged(campusCardId) {
         return campusCardId != student.campusCardId;
@@ -75,11 +80,7 @@ function readNfcTag() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //Message on Screen, that the card isn't mapped
-                            lcdFirstRow = "Nicht gemapped";
-                            setTimeout(function () {
-                                lcdFirstRow = firstRowDefault;
-                            }, 2000);
+                            lcdFirstRow = "Map your card!";
                         }
 
                         if (response.statusCode == 200) {
@@ -88,9 +89,6 @@ function readNfcTag() {
                             logInStudent(body.studentName, body.quota);
                             coffeeMachine.availableCoffees = body.fillLevel;
                             coffeeMachine.isBrewing = body.brewing;
-
-
-
                             /*
                                 ToDo:   the following lines should be moevid in the LCD-1-Scond-Intervall.
                                         Because, if its brewing and you put your card to the Reader, just nothing happens ..
@@ -106,14 +104,10 @@ function readNfcTag() {
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
                                 //TODO show normal coffee state on display
                             }
-
-
-                            
                         }
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
-
                             // ToDo: If you want to show the beginning (only 16chars) of the message on the screen:
                             /*
                             lcdFirstRow = error.substring(0, 16);
@@ -128,10 +122,11 @@ function readNfcTag() {
             readNfcTag();
         } else {
             if(coffeeMachine.isStudentLoggedIn == true) {
-                console.log('no Tag');
-                student.campusCardId = '';
+                resetCampusCardId();
                 logOutStudent();
-                request.get('campuscard');
+            } else if(student.campusCardId != '') {
+                lcdFirstRow = firstRowDefault;
+                resetCampusCardId();
             }
             readNfcTag();
         }
