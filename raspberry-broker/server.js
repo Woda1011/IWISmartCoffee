@@ -37,7 +37,22 @@ coffeeMachine.isBrewing = false;
 
 var xxsrfToken = '';
 
+getInitialTelemetryData();
+
 readNfcTag();
+
+function getInitialTelemetryData() {
+    request.get({
+        url: 'telemetry'
+    }, function(error, response, body) {
+        if(response.statusCode == 200) {
+            body = JSON.parse(body);
+            coffeeMachine.availableCoffees = body.fillLevel;
+            coffeeMachine.temperature = body.temperature;
+
+        }
+    });
+}
 
 function extractCampusCardId(stdout, searchString) {
     var tempString = stdout.slice(stdout.indexOf(searchString));
@@ -49,6 +64,11 @@ function extractCampusCardId(stdout, searchString) {
     return campusCardId;
 }
 
+function resetCampusCardId() {
+    console.log('no Tag');
+    student.campusCardId = '';
+    request.get('campuscard');
+}
 function readNfcTag() {
     function hasCampusCardIdChanged(campusCardId) {
         return campusCardId != student.campusCardId;
@@ -75,11 +95,7 @@ function readNfcTag() {
                         if (response.statusCode == 409) {
                             //StatusCode 409, error: user is not mapped
                             console.log('Student not found');
-                            //Message on Screen, that the card isn't mapped
-                            lcdFirstRow = "Nicht gemapped";
-                            setTimeout(function () {
-                                lcdFirstRow = firstRowDefault;
-                            }, 2000);
+                            lcdFirstRow = "Map your card!";
                         }
 
                         if (response.statusCode == 200) {
@@ -88,9 +104,6 @@ function readNfcTag() {
                             logInStudent(body.studentName, body.quota);
                             coffeeMachine.availableCoffees = body.fillLevel;
                             coffeeMachine.isBrewing = body.brewing;
-
-
-
                             /*
                                 ToDo:   the following lines should be moevid in the LCD-1-Scond-Intervall.
                                         Because, if its brewing and you put your card to the Reader, just nothing happens ..
@@ -101,37 +114,30 @@ function readNfcTag() {
                                 //Admin setup new Coffee, coffee output should be delayed!
                                 //show timer on lcd with time left time left = coffeeFinishTimestamp - Date.now()
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate + 1800000);
-                                //TODO Show Timer on Display with remeaning time until the coffee is finished
                             } else {
                                 coffeeMachine.coffeeFinishTimestamp = new Date(body.fillLevelDate);
-                                //TODO show normal coffee state on display
                             }
-
-
-                            
                         }
                         //TODO errorhandling for server request
                         if (error) {
                             console.log(error);
-
-                            // ToDo: If you want to show the beginning (only 16chars) of the message on the screen:
                             /*
                             lcdFirstRow = error.substring(0, 16);
                             setTimeout(function () {
                                 lcdFirstRow = firstRowDefault;
                             }, 3000);
                             */
-
                         }
                     });
             }
             readNfcTag();
         } else {
             if(coffeeMachine.isStudentLoggedIn == true) {
-                console.log('no Tag');
-                student.campusCardId = '';
+                resetCampusCardId();
                 logOutStudent();
-                request.get('campuscard');
+            } else if(student.campusCardId != '') {
+                lcdFirstRow = firstRowDefault;
+                resetCampusCardId();
             }
             readNfcTag();
         }
@@ -224,8 +230,6 @@ function setLcdFirstRowStudentInfo() {
     }
 }
 
-
-
 function setLcdSecondRow() {
     if (coffeeMachine.availableCoffees > 0) {
         lcdSecondRow = coffeeMachine.temperature + "Grad  " + coffeeMachine.availableCoffees + "Kaffee" + "        ";
@@ -236,13 +240,30 @@ function setLcdSecondRow() {
 
 lcd.on('ready', function () {
     setInterval(function () {
-        setLcdSecondRow();
         lcd.setCursor(0, 0);
         var ausgabetext = lcdFirstRow + emptyRow;
         lcd.print(ausgabetext.substring(0, 16));
         lcd.once('printed', function () {
             lcd.setCursor(0, 1); // col 0, row 1
             lcd.print(lcdSecondRow.substring(0, 16)); // print date
+
+            if(coffeeMachine.isBrewing && ((coffeeMachine.coffeeFinishTimestamp-Date.now()) > 0)) {
+                var timeRemaining = Math.floor((coffeeMachine.coffeeFinishTimestamp-Date.now())/1000);
+                var minutes = Math.floor(timeRemaining/60);
+                var seconds = timeRemaining % 60;
+
+                if(minutes < 10) {
+                    minutes = '0' + minutes;
+                }
+
+                if(seconds < 10) {
+                    seconds = '0' + seconds;
+                }
+
+                lcdSecondRow = 'Ready in ' + minutes + ':' + seconds + '  ';
+            } else {
+                setLcdSecondRow();
+            }
         });
     }, 1000);
 });
@@ -344,7 +365,10 @@ function get_coffee(){
     if (coffee_output_in_use == true) {
         console.log("Bitte Warten - Kaffee wird bereits ausgegeben!");
     } else if (coffeeMachine.isBrewing) {
-        //TODO show message on screen "Kaffee ist noch nicht fertig"
+        lcdFirstRow = "Coffee not ready";
+        setTimeout(function () {
+            lcdFirstRow = firstRowDefault;
+        }, 2000);
     }
     //Kaffeemaschine ist leer
     else if (coffeeMachine.availableCoffees <= 0) {
