@@ -1,8 +1,8 @@
-import {Page, NavController} from "ionic-angular/index";
-import {ControlGroup, AbstractControl, Validators, FormBuilder, Control} from "angular2/common";
-import {HttpService} from "../../shared/services/httpService";
+import {Page, NavController, Alert} from "ionic-angular/index";
 import {LoginPage} from "../login/login";
-import {GoogleRecaptchaDirective} from "../../../node_modules/angular2-google-recaptcha/directives/googlerecaptcha.directive";
+import {ControlGroup, AbstractControl, Control, FormBuilder, Validators} from "@angular/common";
+import {HttpService} from "../../base/http-service";
+import {GoogleRecaptchaDirective} from "../../base/googlerecaptcha.directive";
 
 @Page({
   templateUrl: 'build/pages/register/register.html',
@@ -73,7 +73,15 @@ export class RegisterPage {
     formData.password = formData.passwordMatch.password;
     this.HttpService.addStudent(formData).subscribe(
       (student) => this.nav.setRoot(LoginPage, {hskaId: student.hskaId}),
-      (err) => console.log(err)
+      (err) => {
+        console.error(err);
+        let alert = Alert.create({
+          title: 'Fehler',
+          subTitle: 'Ein Benutzer mit diesem IZ-Kürzel existiert bereits.',
+          buttons: ['OK']
+        });
+        this.nav.present(alert);
+      }
     )
   }
 

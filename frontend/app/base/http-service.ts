@@ -1,14 +1,14 @@
-import {Injectable} from "angular2/core";
 import "rxjs/Rx";
-import {Telemetry, Student} from "../../_typings";
+import {Telemetry, Student} from "../_typings";
 import {Observable} from "rxjs/Observable";
-import {AuthHttp} from "../../base/authHttp";
-import {Http, URLSearchParams} from "angular2/http";
+import {Injectable} from "@angular/core";
+import {Http, URLSearchParams} from "@angular/http";
+import {AuthHttp} from "./auth-http";
 
 @Injectable()
 export class HttpService {
 
-  constructor(private http: Http, private authHttp: AuthHttp) {
+  constructor(private http: Http, private AuthHttp: AuthHttp) {
   }
 
   getTelemetry() {
@@ -22,11 +22,11 @@ export class HttpService {
   }
 
   addStudentCoffeeCoinMapping(coinKey: string) {
-    return this.authHttp.post("/api/coffee-coins/" + coinKey, null);
+    return this.AuthHttp.post("/api/coffee-coins/" + coinKey, null);
   }
 
   getCoffeeLog(hskaId: string) {
-    return this.authHttp.get("/api/students/" + hskaId + "/coffee-log");
+    return this.AuthHttp.get("/api/students/" + hskaId + "/coffee-log");
   }
 
   getStudents(hskaId?: string) {
@@ -34,18 +34,18 @@ export class HttpService {
     if (hskaId && hskaId !== '') {
       params.set('hskaId', hskaId);
     }
-    return this.authHttp.get("/api/students", params).map(res => res.content);
+    return this.AuthHttp.get("/api/students", params).map(res => res.content);
   }
 
   getStudentByHskaId(hskaId: string) {
-    return this.authHttp.get("/api/students/" + hskaId);
+    return this.AuthHttp.get("/api/students/" + hskaId);
   }
 
   addStudent(student: Student) {
-    return this.authHttp.post("/api/students", student);
+    return this.AuthHttp.post("/api/students", student);
   }
 
   updateStudent(student: Student) {
-    return this.authHttp.put("/api/students/" + student.hskaId, student);
+    return this.AuthHttp.put("/api/students/" + student.hskaId, student);
   }
 }

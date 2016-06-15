@@ -1,8 +1,8 @@
 import {Page, NavController} from "ionic-angular/index";
-import {FormBuilder, ControlGroup, AbstractControl, Validators, Control} from "angular2/common";
 import {WebSocketService} from "../../../base/websocket-service";
 import {Students} from "../students";
-import {HttpService} from "../../../shared/services/httpService";
+import {ControlGroup, AbstractControl, Control, FormBuilder, Validators} from "@angular/common";
+import {HttpService} from "../../../base/http-service";
 
 @Page({
   templateUrl: 'build/pages/students/add/add.html',

@@ -1,9 +1,9 @@
 import {Page, NavController, NavParams} from "ionic-angular/index";
-import {FormBuilder, ControlGroup, Validators, Control} from "angular2/common";
 import {WebSocketService} from "../../../base/websocket-service";
 import {Students} from "../students";
-import {HttpService} from "../../../shared/services/httpService";
 import {Student} from "../../../_typings";
+import {ControlGroup, Control, FormBuilder, Validators} from "@angular/common";
+import {HttpService} from "../../../base/http-service";
 
 @Page({
   templateUrl: 'build/pages/students/details/details.html',

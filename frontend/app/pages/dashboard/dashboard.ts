@@ -1,10 +1,9 @@
 import {Page, Alert, NavController} from "ionic-angular";
 import {AuthService} from "../../base/auth";
 import {Student, Telemetry, CoffeeLog} from "../../_typings";
-import {HttpService} from "../../shared/services/httpService.ts";
 import {Observable} from "rxjs/Observable";
-import {ControlGroup, AbstractControl, FormBuilder, Validators} from "angular2/common";
-
+import {ControlGroup, AbstractControl, FormBuilder, Validators} from "@angular/common";
+import {HttpService} from "../../base/http-service";
 
 @Page({
   templateUrl: 'build/pages/dashboard/dashboard.html',

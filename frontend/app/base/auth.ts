@@ -1,17 +1,13 @@
-import {Injectable} from 'angular2/core';
-import {Http, Headers} from 'angular2/http';
 import 'rxjs/Rx';
-import {Storage, LocalStorage} from "ionic-angular";
 import {Credentials, Student} from "../_typings";
 import {CookieService} from 'angular2-cookie/core';
+import {Injectable} from "@angular/core";
+import {Http, Headers} from "@angular/http";
 
 @Injectable()
 export class AuthService {
 
-  private store: Storage;
-
   constructor(private http: Http, private CookieService: CookieService) {
-    this.store = new Storage(LocalStorage);
   }
 
   login(credentials: Credentials) {
@@ -19,8 +15,8 @@ export class AuthService {
     const base64encodedCredentials = btoa(credentials.username + ":" + credentials.password);
     authHeaders.append('Authorization', 'Basic ' + base64encodedCredentials);
     return this.http.get("/api/students/_me", {
-        headers: authHeaders
-      })
+      headers: authHeaders
+    })
       .toPromise()
       .then((res) => {
         let user: Student = res.json();
@@ -31,18 +27,21 @@ export class AuthService {
           roles: user.roles,
           hasCampusCardMapped: user.campusCardId ? true : false
         });
-        this.store.set('token', base64encodedCredentials);
+        this.CookieService.put('token', base64encodedCredentials);
         return user;
       });
   }
 
   setUser(student: Student) {
-    this.store.setJson('student', student);
+    this.CookieService.put('student', JSON.stringify(student));
   }
 
   getUser(): Student {
-    let user = this.store.get('student')._result;
-    return JSON.parse(user);
+    try {
+      return JSON.parse(this.CookieService.get('student'));
+    } catch (e) {
+      return undefined;
+    }
   }
 
   isAuthenticated(): boolean {
@@ -63,8 +62,7 @@ export class AuthService {
   }
 
   getUserRoles() {
-    let user: Student = this.getUser();
-    return user ? user.roles : [];
+    return this.getUser() ? this.getUser().roles : [];
   }
 
   logout() {
@@ -74,8 +72,8 @@ export class AuthService {
   }
 
   clearSession(): void {
-    this.store.remove('student');
-    this.store.remove('token');
+    this.CookieService.remove('token');
+    this.CookieService.remove('student');
     this.CookieService.remove('XSRF-TOKEN');
   }
 }

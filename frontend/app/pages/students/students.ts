@@ -1,8 +1,8 @@
 import {Page, NavController} from "ionic-angular/index";
 import {AddStudent} from "./add/add";
 import {Student} from "../../_typings";
-import {HttpService} from "../../shared/services/httpService";
 import {StudentDetails} from "./details/details";
+import {HttpService} from "../../base/http-service";
 
 @Page({
   templateUrl: 'build/pages/students/students.html',

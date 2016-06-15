@@ -10,14 +10,6 @@
     <ion-list-header>
       Profileinstellungen <b>{{user.hskaId}}</b>
     </ion-list-header>
-    <ion-item *ngFor="#a_role of user.roles">
-      <ion-icon name="leaf" item-left></ion-icon> {{a_role}}
-    </ion-item>
-
-    <ion-item>
-      <ion-label fixed>Benutzername</ion-label>
-      <ion-input type="text" value="{{user.firstName}}s_Nicname"></ion-input>
-    </ion-item>
 
     <ion-item>
       <ion-label fixed>Vorname</ion-label>
@@ -28,31 +20,19 @@
       <ion-label fixed>Nachname</ion-label>
       <ion-input type="text" value="{{user.lastName}}"></ion-input>
     </ion-item>
-
-    <button block light>Änderungen speichern</button>
-
   </ion-list>
 
   <ion-list>
-    <ion-list-header>
-      Passwort
-    </ion-list-header>
-
+    <ion-list-header>Passwort ändern</ion-list-header>
 
     <ion-item>
-      <ion-input type="password" placeholder="Neues Passwort"></ion-input>
+      <ion-input type="password" placeholder="Neues Passwort" disabled></ion-input>
     </ion-item>
-
 
     <ion-item>
-      <ion-input type="password" placeholder="Neues Passwort Wdh."></ion-input>
+      <ion-input type="password" placeholder="Neues Passwort Wdh." disabled></ion-input>
     </ion-item>
 
-    <button block light>Neues Passwort setzen</button>
-
+    <button block light disabled>Neues Passwort setzen</button>
   </ion-list>
-
-
-
-
 </ion-content>

@@ -6,7 +6,7 @@
 
   <ion-content>
     <ion-list>
-      <div *ngFor="#p of pages">
+      <div *ngFor="let p of pages">
         <button ion-item *ngIf="isVisible(p.authorizedRoles)" (click)="openPage(p.component)">
           {{p.title}}
         </button>

@@ -1,19 +1,15 @@
-import {Injectable} from "angular2/core";
-import {Http, Headers} from "angular2/http";
-import {Storage, LocalStorage} from "ionic-angular";
 import {CookieService} from "angular2-cookie/core";
+import {Injectable} from "@angular/core";
+import {Http, Headers} from "@angular/http";
 
 @Injectable()
 export class AuthHttp {
 
-  private store: Storage;
-
   constructor(private http: Http, private CookieService: CookieService) {
-    this.store = new Storage(LocalStorage);
   }
 
   private createAuthorizationHeaders(headers: Headers) {
-    let token = this.store.get('token')._result;
+    let token = this.CookieService.get('token');
     if (token) {
       headers.append('Authorization', 'Basic ' + token);
     }
@@ -65,8 +61,8 @@ export class AuthHttp {
     }
     if (!token || token !== this.CookieService.get('XSRF-TOKEN')) {
       console.log("Token is not valid anymore!");
-      this.store.remove('student');
-      this.store.remove('token');
+      this.CookieService.remove('student');
+      this.CookieService.remove('token');
       this.CookieService.remove('XSRF-TOKEN');
     }
   }
